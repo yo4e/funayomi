@@ -66,12 +66,12 @@ Initial source of historical data.
 
 - Repository: `https://github.com/turnmark/api`
 - Endpoint: `https://turnmark.github.io/api/v1/YYYY/YYYYMMDD.json`
-- Available from: 2026-05-01
+- Available from: current README and observed files start at 2026-01-01
 - Data: programs, preview, odds, results
 - License: MIT
 - Status: unofficial, delayed, no accuracy/completeness guarantee
 
-The first audit must determine:
+The 2026-07-24 audit recorded the following in `docs/DATA_CONTRACT.md`:
 
 - オッズ値がどの取得時点を表すか
 - 同一日の途中更新履歴が残るか、最終スナップショットだけか
@@ -80,7 +80,10 @@ The first audit must determine:
 - 芦屋開催日の抽出方法
 - 払戻とオッズの整合性
 
-「前日オッズ」という会話上の呼称を、そのまま「レース前日の特定時点のオッズ」と解釈しないこと。データ監査で意味を確定します。
+1〜5月の一部は後日バックフィルです。オッズには観測時刻がなく、翌日に
+過去データとして取得されます。通常レースでは払戻と整合しますが、
+開始・前夜・締切・最終のいずれとも断定せず
+`historical_snapshot_time_unknown` とします。
 
 ### 4.2 Boatrace Open API
 
@@ -95,9 +98,9 @@ Potential future source for current-day program and preview data.
 
 Not required for the first historical backtest.
 
-## 5. Data contract to define in M1
+## 5. Data contract defined in M1
 
-A normalized race record should eventually distinguish at least the following.
+正本は `docs/DATA_CONTRACT.md` です。正規化レースは少なくとも次を分離します。
 
 ### Race identity
 
@@ -329,17 +332,38 @@ The exact framework is intentionally undecided until M1–M4 clarify the data vo
 - Data provider limitations and timestamps must remain visible.
 - No credentials, payment data, or betting account access should enter the repository.
 
-## 12. Open design questions
+## 12. Design decisions and remaining questions
 
-These are unresolved and must not be silently assumed.
+Issue #1で固定した事項:
 
-1. Is 3連単 definitely the first bet type, or should 2連単 be used as a lower-dimensional baseline first?
-2. What exact timestamp do Turnmark odds represent?
-3. Is the available history long enough for an Ashiya-only 120-way model?
-4. Should the first model use entry number or actual course number when preview data exists?
-5. What information is available at the intended real-world prediction cutoff?
-6. How should missing preview data be handled?
-7. How should races with fewer than six valid entries be treated?
-8. What minimum sample support is required before displaying a high expectation estimate?
-9. Should model fitting be cumulative or rolling-window?
-10. What deployment form best supports a low-cost public web app without exposing unstable predictions as guarantees?
+1. 初期賭式は3連単
+2. 芦屋1,284レース、clean cohort 1,183レースを確認し、平滑化120カテゴリ
+   基準モデルを実装
+3. 初期モデルはentry numberだけを使い、previewは観測時刻不明のため不使用
+4. 予測締切はprogram cutoff
+5. preview欠損はnullのまま保存し、resultから補完しない
+6. 6艇未満または120オッズ不完備は `SKIP_DATA`
+7. 支持数は各推定に表示し、α=1で平滑化
+8. 固定期間モデルを実装し、rollingは次段階
+9. 11候補から検証回収率で閾値8.00を選んだ3分割pseudo-holdoutは、
+   次期間で的中0・回収率0.0210となり、高配当1件への適合と判断
+
+次期方針案:
+
+- `docs/NEXT_PHASE_PROPOSAL.md` に、2連単を唯一のprimary confirmatory
+  bet typeとする監査先行案を草案として記録
+- `docs/SUBAGENT_DESIGN_REVIEW.md` のCodex内部レビューを草案へ反映済み
+- 草案内の暫定推奨はOption Aだが、月野の実レビューと山田さんの決定は未了
+- 2連単、数値依存、モデル、future holdoutの実装は未承認
+- 最初に進める候補は2連単・program as-of・オッズ源の監査とprotocol策定だけ
+
+未解決で、暗黙に仮定してはいけない事項:
+
+1. Turnmarkオッズの厳密な観測時刻と購入可能時点
+2. Turnmark program特徴のas-of可用性
+3. 月野の実レビュー、Option A / B / C、監査packageの開始可否
+4. nested expanding-windowのfold、複数試行管理、block bootstrap
+5. 個別選手・モーター特徴を追加する事前仮説と停止条件
+6. future probability / economic holdoutの開始・終了条件
+7. UIへ進む最低性能・較正条件
+8. 不安定な推定を利益保証と誤解させない公開・deployment形態

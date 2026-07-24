@@ -24,7 +24,7 @@ Exit condition:
 
 ## Phase 1 — Data audit and canonical dataset
 
-Status: **not started**
+Status: **complete (2026-07-24)**
 
 Goal: Turnmark APIの意味と品質を確認し、芦屋の過去レースを再現可能な形で正規化する。
 
@@ -41,8 +41,10 @@ Work:
 
 Decision gate:
 
-- Turnmarkのオッズを歴史的バックテストに使えると判断できるか
-- 3連単を最初の対象にするか、2連単で確率モデルを先に検証するか
+- Turnmarkのオッズは時点未確認の歴史スナップショットとして、計算核の
+  探索的バックテストに限定して使用する
+- 3連単を初期対象として確定。芦屋1,284レース、clean cohort 1,183レースを
+  確認し、平滑化120カテゴリ基準モデルには十分と判断した
 
 Exit condition:
 
@@ -52,7 +54,7 @@ Exit condition:
 
 ## Phase 2 — Transparent probability baseline
 
-Status: **blocked by Phase 1**
+Status: **complete (2026-07-24)**
 
 Goal: 芦屋の各着順組み合わせへ、説明可能な確率を割り当てる。
 
@@ -67,8 +69,10 @@ Work:
 
 Decision gate:
 
-- 基準モデルが単純な歴史頻度より有意に良いか
-- データ量がモデルの細分化に耐えるか
+- 平滑化枠番頻度モデルは評価263レースで一様分布より良いが、市場暗黙確率
+  より悪かった
+- 個別選手・モーター等への細分化は行わず、まず基準モデルの未使用期間評価を
+  優先する
 
 Exit condition:
 
@@ -78,7 +82,7 @@ Exit condition:
 
 ## Phase 3 — Expected-value ranking engine
 
-Status: **blocked by Phase 2**
+Status: **complete (2026-07-24)**
 
 Goal: 予測確率とオッズから期待値を計算し、買い目または見送りを返す。
 
@@ -100,7 +104,7 @@ Exit condition:
 
 ## Phase 4 — Walk-forward backtest
 
-Status: **blocked by Phase 3**
+Status: **in progress — fixed split and retrospective threshold holdout complete**
 
 Goal: 未来情報なしで、期待値閾値ごとの過去成績と不確実性を測る。
 
@@ -124,6 +128,41 @@ Exit condition:
 - 完全に未使用だった最終期間で評価が完了
 - 悪い結果も含めてレポートが保存される
 - 再現コマンドまたは手順が文書化される
+
+Current evidence:
+
+- 学習: 2026-05-01〜06-15、clean 253レース
+- 評価: 2026-06-16〜07-23、264レース
+- 事前固定した期待回収率閾値: 1.00
+- 100円固定、閾値以上の全組合せ
+- 21,269組購入、54的中、回収率0.8219、損益-378,760円
+- 最大連敗16、最大ドローダウン825,540円
+- これはオッズ時点未確認の探索的結果で、収益性や実購入可能性を示さない
+- 3分割の閾値選択では4月に閾値8.00を選んだが、5月1日〜6月15日の
+  固定テストは1,573点、的中0、回収率0.0210、損益-154,000円
+- 検証期間の黒字は188,190円の高配当1件に依存し、次期間で再現しなかった
+- 詳細: `docs/THRESHOLD_HOLDOUT_STUDY.md`
+- 複数foldのrolling walk-forward、真に未使用の将来期間、不確実性評価は
+  未実施
+
+### Next-direction proposal — awaiting owner decision
+
+Phase 4の次に何を検証するかは未決定です。
+`docs/NEXT_PHASE_PROPOSAL.md` は、2連単を唯一のprimary confirmatory
+bet typeとする監査先行Option Aを暫定推奨する草案です。
+`docs/SUBAGENT_DESIGN_REVIEW.md` の内部レビューは反映済みですが、
+月野の実レビューは未了です。
+
+判断前の境界:
+
+- Go候補: 2連単全期間監査、program as-of監査、research protocol策定、
+  合法な時刻付きオッズ源の調査
+- Hold: 賭式schema、Plackett–Luce、nested walk-forward、future holdout
+- No-Go: UI、当日予想、収益性主張、自動投票・実資金操作
+
+この記録はPhase 7や新マイルストーンの開始を意味しません。月野の実レビューを
+反映し、山田さんがOption A / B / Cと最初の作業範囲を決めた後に
+ロードマップを更新します。
 
 ## Phase 5 — Web UI
 
