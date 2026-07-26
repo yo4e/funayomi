@@ -341,11 +341,12 @@ GitHub状態:
 - 月野テンプレクスの条件付き承認レビュー:
   `https://github.com/yo4e/funayomi/issues/1#issuecomment-5066592698`
 - open pull request: 0
-- GitHub Actions: Python 3.9 / 3.14 matrixを追加。push後の実行確認待ち
+- GitHub Actions: Python 3.9 / 3.14 matrixがcommit `8bfc4a9`に対して成功
+  - `https://github.com/yo4e/funayomi/actions/runs/30180483790`
 
 ローカルでは全89テスト、`compileall`、`git diff --check`が成功しています。
 月野の環境ではcloneと再実行ができなかったため、独立実行証跡はGitHub
-Actionsで補います。
+Actionsで確認しました。
 
 ローカルCI順序の再現では、macOS付属Python 3.9の初期pip 21.2.4が
 `pyproject.toml`のeditable installに未対応で最初のinstallに失敗しました。
