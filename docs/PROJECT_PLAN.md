@@ -1,6 +1,6 @@
 # FunaYomi Project Plan
 
-Updated: 2026-07-24
+Updated: 2026-07-26
 
 ## 1. Purpose
 
@@ -54,9 +54,14 @@ expected_return = predicted_probability × odds
 - `1.10`：1円あたり1.10円の期待回収、期待利益率10%の推定
 - `0.80`：期待利益率-20%の推定
 
+現行値はclean cohort条件付き確率と時点不明の歴史オッズによるpoint
+estimateで、返還確率を含む厳密な実購入EVではありません。機械出力は
+`refund_probability_mode: "not_modeled"` と `actionable: false` を明記します。
+
 ### Value bet
 
-設定した期待回収率の閾値を超える買い目です。高配当という意味ではありません。
+設定した期待回収率の閾値を超える研究上の候補です。出力名は
+`RESEARCH_CANDIDATES` で、高配当や購入推奨という意味ではありません。
 
 ## 4. Data sources
 
@@ -348,22 +353,31 @@ Issue #1で固定した事項:
 9. 11候補から検証回収率で閾値8.00を選んだ3分割pseudo-holdoutは、
    次期間で的中0・回収率0.0210となり、高配当1件への適合と判断
 
-次期方針案:
+次期方針と完了したWork package 0:
 
+- 山田さんがOption A、2連単primary、Work package 0、Issue #1 hardening、
+  MITを2026-07-24に承認
 - `docs/NEXT_PHASE_PROPOSAL.md` に、2連単を唯一のprimary confirmatory
-  bet typeとする監査先行案を草案として記録
+  bet typeとする監査先行方針を記録
 - `docs/SUBAGENT_DESIGN_REVIEW.md` のCodex内部レビューを草案へ反映済み
-- 草案内の暫定推奨はOption Aだが、月野の実レビューと山田さんの決定は未了
-- 2連単、数値依存、モデル、future holdoutの実装は未承認
-- 最初に進める候補は2連単・program as-of・オッズ源の監査とprotocol策定だけ
+- `docs/TSUKINO_DESIGN_REVIEW.md` の月野レビューを反映し、Issue #1研究コアは
+  条件付き承認、Option A / Work package 0は支持
+- 確率経路 `A + P → B → E1` と価格・収益経路 `D → E2`を分離
+- 2連単全期間監査はGate A conditional Go。2連単固有clean 1,184レース
+- program候補16特徴は完全だがas-of証跡がなく、historical Gate P No-Go
+- 採用可能なpre-close odds源がなくGate D No-Go
+- 仮説、特徴、fold、開催節bootstrap、停止条件を
+  `protocols/ashiya_exacta_pl_v1.json`へ固定
+- Issue #1出力をresearch-only / non-actionable化し、最小CIとMIT LICENSEを追加
+- 2連単schema、数値依存、モデル、nested評価、future holdoutは未承認
 
 未解決で、暗黙に仮定してはいけない事項:
 
 1. Turnmarkオッズの厳密な観測時刻と購入可能時点
-2. Turnmark program特徴のas-of可用性
-3. 月野の実レビュー、Option A / B / C、監査packageの開始可否
-4. nested expanding-windowのfold、複数試行管理、block bootstrap
-5. 個別選手・モーター特徴を追加する事前仮説と停止条件
-6. future probability / economic holdoutの開始・終了条件
+2. 公式翌日番組LZHの利用・保存許可とfield対応
+3. prospective program snapshotの固定cutoffと開始可否
+4. 数値依存、2連単schema、モデル実装の開始可否
+5. E1の目標CI幅とfuture holdout開始日
+6. 採用可能な時点付きオッズ源、E2購入規則と終了条件
 7. UIへ進む最低性能・較正条件
 8. 不安定な推定を利益保証と誤解させない公開・deployment形態

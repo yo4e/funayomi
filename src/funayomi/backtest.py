@@ -11,6 +11,12 @@ from .domain import NormalizedRace
 from .errors import ChronologyError, DataContractError
 from .model import ProbabilityPrediction, SmoothedTrifectaFrequencyModel
 from .ranking import rank_race
+from .safety import (
+    ACTIONABLE,
+    REFUND_PROBABILITY_MODE,
+    RESEARCH_ONLY_NOTICE,
+    STRATEGY_STATUS,
+)
 
 
 @dataclass(frozen=True)
@@ -293,6 +299,9 @@ def run_backtest(
         races=tuple(race_results),
         warnings=(
             "Turnmarkオッズの観測時刻は不明です。この結果は歴史スナップショットによる計算核の検証で、実購入可能性や将来収益を示しません。",
+            "選択に使う期待回収率はclean cohort由来のP(win)×oddsの"
+            "point estimateで、返還確率をモデル化していません。"
+            "総払戻には実現返還のみを加算しています。",
             "閾値は評価結果を見る前に固定し、評価後の調整結果を正式性能として扱わないでください。",
         ),
     )
@@ -300,6 +309,9 @@ def run_backtest(
 
 def backtest_to_dict(result: BacktestResult) -> Dict[str, Any]:
     return {
+        "actionable": ACTIONABLE,
+        "strategy_status": STRATEGY_STATUS,
+        "refund_probability_mode": REFUND_PROBABILITY_MODE,
         "periods": {
             "training": {"start": result.train_start, "end": result.train_end},
             "evaluation": {
@@ -386,6 +398,7 @@ def format_backtest_text(result: BacktestResult) -> str:
     return "\n".join(
         [
             "FunaYomi 時系列バックテスト",
+            "利用制限: " + RESEARCH_ONLY_NOTICE,
             f"学習期間: {result.train_start} 〜 {result.train_end} "
             f"({result.training_races}有効R)",
             f"評価期間: {result.evaluation_start} 〜 {result.evaluation_end} "

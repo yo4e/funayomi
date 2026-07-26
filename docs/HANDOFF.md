@@ -1,6 +1,6 @@
 # FunaYomi Handoff
 
-Updated: **2026-07-24**
+Updated: **2026-07-26**
 
 ## Current state
 
@@ -10,14 +10,20 @@ Issue #1 の完了条件に対応する **非UIコアが実装済み** です。
 - Phase 2 / M2: 透明な基準確率モデル — complete
 - Phase 3 / M3: 期待値ランキング — complete
 - Phase 4 / M4: 固定期間の最小時系列バックテスト — core complete
+- Issue #1 pre-merge hardening — complete
+- Option A / Work package 0 — complete
 - Web UI、当日予想、自動投票 — not started / scope外
 
 実装は Python 3.9以上、実行時依存なしです。
 
-次期方針は **internal sub-agent reviewed draft / Tsukino review pending /
-owner decision required** です。草案では、2連単を唯一の主仮説とする
-監査先行Option Aを暫定推奨していますが、新しい賭式、モデル、
-future holdoutの実装は開始していません。
+月野はIssue #1研究コアを条件付き承認し、山田さんは2026-07-24に
+pre-merge hardening、MIT、2連単を唯一の主仮説とするOption A、
+Work package 0、合法な時点付きsource調査を承認しました。承認範囲は完了
+しています。
+
+2連単監査はGate A conditional Goでしたが、historical programのGate Pと
+時点付きオッズのGate DがNo-Goです。そのため2連単schema、Plackett–Luce、
+数値依存、nested evaluation、future holdout、定期収集は開始していません。
 
 ## Implemented files
 
@@ -32,20 +38,32 @@ future holdoutの実装は開始していません。
 - `src/funayomi/ranking.py` — EV計算、降順、`PASS` / `SKIP_DATA`
 - `src/funayomi/backtest.py` — 固定期間評価、実払戻、F/L・不成立返還、
   log loss、Brier score、較正
+- `src/funayomi/safety.py` — research-only / non-actionable固定metadata
 - `src/funayomi/cli.py` — `fetch` / `rank` / `backtest`
 - `scripts/threshold_holdout_study.py` — 事前固定した閾値選択とテストの再現
+- `scripts/audit_turnmark_exacta.py` — offlineの2連単全期間Gate A監査
+- `scripts/audit_program_asof.py` — program完全性・as-of Gate P監査
 
 ### Verification and documentation
 
 - `tests/` — 標準ライブラリ `unittest` の自動テスト
 - `docs/DATA_CONTRACT.md` — 実データ監査、型、時点、例外、漏洩境界
 - `docs/THRESHOLD_HOLDOUT_STUDY.md` — 閾値3分割実験の設計、全結果、fingerprint
-- `docs/NEXT_PHASE_PROPOSAL.md` — 月野レビュー前の次期方針草案、主仮説、
-  判断ゲート、作業package、レビュー依頼事項
+- `docs/EXACTA_DATA_AUDIT.md` — 2連単30通り、払戻、例外、適格件数、Gate A
+- `docs/PROGRAM_AS_OF_AUDIT.md` — program候補特徴の完全性とGate P
+- `docs/TIMESTAMPED_SOURCE_RESEARCH.md` — prospective program候補とGate D調査
+- `docs/RESEARCH_PROTOCOL.md` — 2連単Plackett–Luce v1事前設計の説明
+- `protocols/ashiya_exacta_pl_v1.json` — 実行前に固定した機械可読protocol
+- `docs/NEXT_PHASE_PROPOSAL.md` — 月野レビュー反映済みの次期方針、二経路の
+  判断ゲート、完了したWork package 0、次のDecision checkpoint
 - `docs/SUBAGENT_DESIGN_REVIEW.md` — Codexサブエージェントによる内部設計
   レビュー。月野のレビューではない
+- `docs/TSUKINO_DESIGN_REVIEW.md` — 月野テンプレクスによるIssue #1と
+  次期方針のレビュー要約。Issueコメントを正本とする
 - `README.md` — セットアップ、実行例、実測結果
-- `docs/ROADMAP.md` — Phase 1〜3完了、Phase 4の残作業、次期方針の決定待ち
+- `docs/ROADMAP.md` — Phase 1〜4 core、hardening、Work package 0の状態
+- `.github/workflows/ci.yml` — Python 3.9 / 3.14のinstall、unit test、compile
+- `LICENSE` — MIT License
 
 ## Data audit
 
@@ -78,6 +96,77 @@ FunaYomiは初回原本をSHA付きで保存し、明示的refresh時も旧版�
 
 詳細は `docs/DATA_CONTRACT.md` が正本です。
 
+## Work package 0 results
+
+### Gate A — exacta contract
+
+- raw期間: 2026-01-01〜2026-07-23、204日、芦屋1,284レース
+- raw manifest SHA-256:
+  `92ebd6271d04ff2a914986fb21bf62d6f7882822ed53d6c15ab1239468967b65`
+- 2連単30 canonical key: 1,284 / 1,284レース
+- 38,520値: 正38,364、`0` 156、null / 型不正 / 欠落 / 余分 / 重複0
+- `0`: 欠場15艇由来150、原因未定義6値・4レース
+- 2連単払戻: 全1,284レースで1件
+- 不成立、1〜2着同着、複数払戻: 観測0
+- F/L発生31レース、直接返還field 0、導出返還対象404通り
+- 2連単固有clean probability cohort: 1,184
+- strict full-order clean: 1,183
+- 全30正値かつ歴史精算監査可能: 1,265
+- 開催節: 20、complete 18、期間端partial 2、曖昧境界0
+- 判定: `CONDITIONAL_GO_RETROSPECTIVE_EXACTA_CONTRACT`
+
+Gate Aだけではschema・モデル実装へ進みません。未観測の不成立、top-2同着、
+複数払戻は将来fail-closedです。正本は `docs/EXACTA_DATA_AUDIT.md` です。
+
+### Gate P — program as-of
+
+- program候補16特徴: 7,704艇行で欠損0、非数値0
+- 6艇program: 1,284 / 1,284レース
+- providerの公開・更新・観測timestamp: 0
+- sidecar取得と締切を比較可能な1,284件: 全件締切後
+- source SHA集合fingerprint:
+  `12f45eba27872b505626c2447845d5d695315e8d01b5fe003b6bbf31d6137560`
+- 判定: `NO_GO_HISTORICAL_CONFIRMATORY_USE`
+
+公式の翌日番組LZHはprospective snapshot候補ですが、自動取得・保存・派生利用の
+許可範囲とfield対応が未確認です。収集は開始していません。正本は
+`docs/PROGRAM_AS_OF_AUDIT.md` と `docs/TIMESTAMPED_SOURCE_RESEARCH.md` です。
+
+### Gate D — timestamped purchasable odds
+
+Turnmarkはpost-close・時刻なし、Boatrace Open APIはoddsなし、公式HTMLは
+公開API・安定schema・機械取得許可がなく、旧公式サービスは終了済みでした。
+
+```text
+Gate D = NO_GO_NO_ADOPTABLE_SOURCE
+```
+
+価格collector、E2、EV・買い目UIは開始していません。公式許可または契約済み
+feedなしに公式HTMLを収集しません。
+
+### Research protocol v1
+
+`protocols/ashiya_exacta_pl_v1.json` のSHA-256:
+
+```text
+5c0f160d0aec74407fd82e05e826cbfdaa920cedcd22a51092926f24814cb24a
+```
+
+固定した主な設計:
+
+- primary: program特徴Plackett–Luce対α=1の枠番2連単頻度baseline
+- primary metric: race単位log-loss差の平均
+- outer shadow: 2026年4月、5月、6月、7月1〜23日
+- training-only median補完、欠損indicator、標準化
+- L2: `0.01, 0.1, 1, 10, 100`
+- 開催節block、outer層別、20,000 bootstrap、PCG64 seed `20260724`
+- Gate B hard pass: paired差95%区間の上限 `< 0`
+- Brier、ECE、較正、fold別差はsecondary
+- E1最低線: 300適格レース、3暦月、12開催節、最大12暦月
+
+protocolはdesign frozenですが `execution_status = HOLD_GATE_P_NO_GO` です。
+モデルやnested評価は実装・実行していません。
+
 ## Probability model
 
 初期モデル:
@@ -109,8 +198,17 @@ P(c) = (count(c) + α) / (N + 120α)
 - 閾値比較は `>=`
 - 有効120オッズが揃わなければ `SKIP_DATA`
 - 閾値以上が0件なら `PASS`
+- 閾値以上があれば `RESEARCH_CANDIDATES`。購入推奨ではない
 - text / JSON出力
 - JSONに原本SHA、学習fingerprint、α、根拠、支持数、除外理由を含む
+- JSON直下に `actionable: false`、
+  `strategy_status: historical_research_only`、
+  `refund_probability_mode: not_modeled`
+- text冒頭に歴史研究専用・実購入判断不可を表示
+
+現行の期待回収率はclean cohort由来の `P(win) × odds` point estimateで、
+`P(refund)`を含む厳密な実購入EVではありません。バックテストの総払戻には、
+候補確定後に結果から判明した実現返還だけを加算します。
 
 ## Backtest ordering and settlement
 
@@ -118,14 +216,14 @@ P(c) = (count(c) + α) / (N + 120α)
 
 ```text
 過去期間だけでfit
--> programとoddsで購入候補を固定
+-> programとoddsで仮想候補を固定
 -> 固定後にoutcomeを開く
 -> 的中、実払戻、返還を精算
 ```
 
 - ランダム分割なし
 - 各選択組み合わせ100円
-- 閾値以上の全組み合わせを購入
+- 閾値以上の全組み合わせを仮想購入
 - F/L艇を含む選択だけ100円返還
 - 一意な1〜3着がなく、明示的な空払戻と監査済み例外コードがある
   3連単不成立は全選択を返還
@@ -233,15 +331,26 @@ PYTHONPATH=src python -m unittest discover -s tests -v
 結果:
 
 ```text
-Ran 72 tests
+Ran 89 tests
 OK
 ```
 
 GitHub状態:
 
 - Issue #1: open
+- 月野テンプレクスの条件付き承認レビュー:
+  `https://github.com/yo4e/funayomi/issues/1#issuecomment-5066592698`
 - open pull request: 0
-- GitHub Actions / combined status: 未設定
+- GitHub Actions: Python 3.9 / 3.14 matrixを追加。push後の実行確認待ち
+
+ローカルでは全89テスト、`compileall`、`git diff --check`が成功しています。
+月野の環境ではcloneと再実行ができなかったため、独立実行証跡はGitHub
+Actionsで補います。
+
+ローカルCI順序の再現では、macOS付属Python 3.9の初期pip 21.2.4が
+`pyproject.toml`のeditable installに未対応で最初のinstallに失敗しました。
+workflowどおりpip 26.0.1へ更新後、`pip install -e .`、全89テスト、
+`compileall`は成功しました。CIがpip upgradeを先に行う理由として記録します。
 
 実データ統合確認:
 
@@ -253,6 +362,7 @@ GitHub状態:
 - 閾値10,000で `PASS` を確認
 - 同キャッシュの `--offline` バックテストを確認
 - 3分割閾値実験を同キャッシュから再実行し、文書値と一致
+- 同固定cacheから2連単Gate A監査とprogram Gate P監査を再実行し、文書値と一致
 
 ## Known limits
 
@@ -267,26 +377,22 @@ GitHub状態:
    rolling walk-forward、真に未使用の将来期間、bootstrap不確実性、
    複数試行管理は未実装
 9. UI、当日データ、リアルタイムオッズ、自動投票は未実装
-10. Turnmark program特徴は `pre_race_timestamp_unverified`
-11. Turnmarkの2連単キーはsampleで存在確認しただけで、全期間の30通り、
-    返還、不成立、同着、適格件数は未監査
-12. Plackett–Luce、賭式schema、数値依存、CIは未実装・未承認
+10. Turnmark program特徴は値が完全でも
+    `pre_race_timestamp_unverified`。historical confirmatory利用はNo-Go
+11. 2連単不成立、1〜2着同着、複数払戻は実例0で、将来は契約追加まで停止
+12. 2連単の原因未定義`0`が6値・4レースあり、補完しない
+13. Plackett–Luce、賭式schema、数値依存、nested評価は未実装・未承認
+14. 現行の期待回収率は返還確率を含まないclean cohort由来のpoint estimate
+15. 公式翌日番組LZHは利用許可・field対応未確認で、収集未開始
+16. 採用可能な時点付きpre-close odds源がなく、Gate D / E2はNo-Go
 
 ## Exact restart point
 
-次の再開地点は、**実際のChatGPTの月野に
-`docs/NEXT_PHASE_PROPOSAL.md` をレビューしてもらい、その回答をリポジトリへ
-反映すること**です。Codexのサブエージェントを月野として扱ってはいけません。
+次の再開地点は一つです。
 
-月野のレビュー反映後、山田さんが監査先行Option A / 3連単維持Option B /
-データ蓄積Option Cのどれを採用するか決めます。
+> **山田さんが、公式翌日番組LZHについて利用許可とfield契約を確認し、
+> 結果公開前のprospective program snapshot収集だけを次の作業packageとして
+> 設計するか判断する。**
 
-草案内で暫定推奨するOption Aを選ぶ場合も、最初の判断はWork package 0
-（2連単全期間監査、program as-of監査、research protocol策定、合法な
-時刻付きオッズ源の調査）だけを開始してよいかです。
-
-- Go候補: 上記4つの監査・設計作業
-- Hold: 賭式schema、Plackett–Luce、nested walk-forward、future holdout
-- No-Go: UI、当日予想、収益性主張、自動投票・実資金操作
-
-この決定まではコードを変更せず、新しいマイルストーンを開始しません。
+この判断までは、外部問い合わせ、定期収集、2連単schema、NumPy / SciPy、
+Plackett–Luce、nested evaluation、E1、E2、UIを開始しません。

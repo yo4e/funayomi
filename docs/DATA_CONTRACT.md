@@ -1,6 +1,6 @@
 # FunaYomi Data Contract
 
-Updated: **2026-07-24**
+Updated: **2026-07-26**
 
 ## 1. 目的と適用範囲
 
@@ -88,6 +88,21 @@ observed_at = null
 「最終オッズ」「締切オッズ」「前夜オッズ」と断定しません。ランキングと
 バックテストは、時点未確認の歴史スナップショットを使う計算核の検証です。
 実際の購入締切前に同じ価格が利用できたことや、将来の収益性は示しません。
+
+### 3.5 programのas-of時点
+
+次期仮説候補のprogram特徴16項目は、全1,284レース・7,704艇行で欠損0、
+非数値0でした。一方、provider payloadにはprogramの公開・更新・観測時刻が
+なく、今回保持したcacheは全件レース締切後に取得されています。
+
+```text
+availability = pre_race_timestamp_unverified
+Gate P = NO_GO_HISTORICAL_CONFIRMATORY_USE
+```
+
+完全な値が存在することと、その値を予測時点で利用できたことを分けます。
+詳細、SHA集合fingerprint、再現コマンドは
+[`PROGRAM_AS_OF_AUDIT.md`](PROGRAM_AS_OF_AUDIT.md) を正本とします。
 
 ## 4. 実データ監査結果
 
@@ -180,6 +195,35 @@ BOAT RACE公式ガイドは、F/Lとなった艇を含む舟券は全額返還�
 欠落・型不正・壊れた払戻配列を返還とは解釈せず、安全に停止します。
 返還額は Turnmark の観測フィールドではなく、公式規則と100円固定購入から
 導出した値です。この導出規則と件数を出力へ残します。
+
+### 4.3 2連単のaudit-only契約
+
+Work package 0では実装を広げず、raw Turnmarkの
+`odds.exacta."<1着>"."<2着>"` と `result.payouts.exacta` を全期間監査
+しました。
+
+- 30 canonical key: 1,284 / 1,284レース
+- 欠落、余分、重複、null、型不正: 0
+- 38,520オッズ値: 正38,364、`0` 156
+- `0`のうち欠場15艇由来150、原因未定義6値・4レース
+- 2連単払戻1件: 1,284レース
+- 不成立、1〜2着同着、複数払戻: 観測0
+- 勝ちオッズと払戻の不一致31レースは全てF/L発生レース
+- 直接の返還fieldはなく、F/Lから導く返還対象は延べ404通り
+- 2連単固有clean probability cohort: 1,184レース
+- strict full-order clean: 1,183レース
+- 全30正値かつ歴史精算を監査できるcohort: 1,265レース
+
+2連単固有cleanは、program/result 6艇、既知例外なし、一意な1〜2着、
+1件の有効な2連単払戻とtop-2の一致を要求します。3〜6着の同着はtop-2へ
+影響しないため許容します。strict cohortとの差1件は2026-04-05 6Rの
+4着同着です。
+
+Gate Aはretrospectiveな2連単確率契約に限る `CONDITIONAL_GO` です。
+不成立、top-2同着、複数払戻は実例がないため、将来観測時は契約追加まで
+fail-closedとします。これは2連単schema、モデル、ランキング、バックテストの
+実装許可ではありません。完全な結果、月別件数、manifest fingerprint、
+再現コマンドは [`EXACTA_DATA_AUDIT.md`](EXACTA_DATA_AUDIT.md) を正本とします。
 
 ## 5. Turnmark 入力構造
 
@@ -277,8 +321,9 @@ program.entry_numbers
 - `0`、null、文字列、負値、欠落は `null / unavailable` にする
 - 正規化後は120キーを必ず持ち、利用不能理由を `issues` に記録する
 
-120通りがすべて有効でないレースはランキングを表示しても購入判断を
-`SKIP_DATA` とし、バックテストから除外します。
+120通りがすべて有効でないレースはランキングを表示しても研究評価を
+`SKIP_DATA` とし、バックテストから除外します。有効で閾値以上の候補がある
+場合の判定名は `RESEARCH_CANDIDATES` であり、購入推奨を意味しません。
 
 ### 6.4 outcome
 
@@ -363,6 +408,29 @@ data/cache/
 期待利益率 = 期待回収率 - 1
 ```
 
+この値はclean cohort由来の `P(win)` と時点未確認の歴史オッズを掛けた
+point estimateです。返還確率を含む厳密な実購入EVではありません。
+JSONのrank/backtest出力は、誤用を避けるため次を必須とします。
+
+```json
+{
+  "actionable": false,
+  "strategy_status": "historical_research_only",
+  "refund_probability_mode": "not_modeled"
+}
+```
+
+返還込みの1円stakeの概念式は次ですが、現行モデルは `P(refund)` を
+モデル化していません。
+
+```text
+expected_settled_return
+= P(win) × odds + P(refund) × refunded_stake
+```
+
+バックテストでは候補確定後に観測された実現返還だけを総払戻へ加えます。
+予測時点の返還確率を後知恵で補ったものではありません。
+
 ## 10. 既知の限界と次のゲート
 
 - オッズの厳密な観測時刻と購入可能時点は未確認
@@ -370,6 +438,7 @@ data/cache/
 - 1〜5月の一部は後日バックフィルで、当時保存された値ではない
 - 1,000倍以上のオッズは小数精度を失っている
 - 返還の対象・金額を直接表すフィールドがない
+- 現行期待回収率は返還確率を含まないpoint estimate
 - 初期モデルは枠番だけの弱い基準モデルで、個別選手差を表現しない
 - データ期間は約7か月で、収益性を断定できない
 

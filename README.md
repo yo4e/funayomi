@@ -10,15 +10,19 @@
 
 Python 3.9以上と標準ライブラリだけで動きます。ウェブUI、当日予想、
 リアルタイムオッズ、自動投票はありません。現在のコアは、時点未確認の
-歴史オッズで計算手順を検証するためのものです。
+歴史オッズで計算手順を検証するためのものです。出力は常に
+`actionable: false` / `historical_research_only` で、実購入判断には使えません。
 
-次期方針はまだ決定していません。2連単を唯一の主仮説として低次元の
-確率モデルを検証する監査先行案を
+次期方針は、2連単を唯一の主仮説として低次元の確率モデルを検証する
+監査先行Option Aです。
 [`docs/NEXT_PHASE_PROPOSAL.md`](docs/NEXT_PHASE_PROPOSAL.md) に記録しています。
 Codexサブエージェントによる
-[`内部レビュー`](docs/SUBAGENT_DESIGN_REVIEW.md) は反映済みですが、月野による
-レビューはまだです。現時点で2連単、Plackett–Luce、UIの実装開始を
-意味しません。
+[`内部レビュー`](docs/SUBAGENT_DESIGN_REVIEW.md) と、最初の設計者である
+月野テンプレクスによる
+[`実レビュー`](docs/TSUKINO_DESIGN_REVIEW.md) を反映済みです。
+Issue #1研究コアは条件付き承認、Option A / Work package 0は支持されました。
+山田さんの承認により、Issue #1の安全化とWork package 0の監査・事前設計を
+実施しました。2連単schema、Plackett–Luce、UIの実装は開始していません。
 
 ## 初期スコープ
 
@@ -77,8 +81,11 @@ funayomi rank \
 `--format json` です。JSONには全120通り、確率、オッズ、期待回収率、
 期待利益率、根拠、支持数、除外理由、原本SHA、学習fingerprintを含みます。
 
-有効な120オッズが揃わないレースは `SKIP_DATA`、閾値以上の組み合わせが
-なければ正式に `PASS` を返します。
+JSON直下には `actionable: false`、`strategy_status:
+"historical_research_only"`、`refund_probability_mode: "not_modeled"` を
+必ず含みます。有効な120オッズが揃わないレースは `SKIP_DATA`、閾値以上の
+組み合わせがなければ `PASS`、あれば `RESEARCH_CANDIDATES` を返します。
+候補は研究上の分類で、購入推奨ではありません。
 
 ### 3. 固定期間バックテスト
 
@@ -93,9 +100,9 @@ funayomi backtest \
 ```
 
 学習終了日は評価開始日より前でなければ実行できません。閾値以上の全組合せを
-各100円買う固定ルールです。購入候補は出走表とオッズだけで確定し、その後に
-結果を開いて、実払戻とF/L返還を精算します。ランダム分割や評価期間内の
-再学習はしません。
+各100円と仮定する歴史研究用の固定ルールです。仮想候補は出走表とオッズだけで
+確定し、その後に結果を開いて、実払戻とF/L返還を精算します。ランダム分割や
+評価期間内の再学習はしません。
 
 ### 4. テスト
 
@@ -135,6 +142,25 @@ P(組み合わせ c) = (count(c) + α) / (N + 120α)
 
 データ構造、型、返還・不成立、オッズと払戻の照合、キャッシュ契約は
 [`docs/DATA_CONTRACT.md`](docs/DATA_CONTRACT.md) に記録しています。
+
+### 次期研究のWork package 0
+
+山田さんの承認後、2連単を唯一のprimary仮説とする前提監査だけを実施しました。
+
+- [2連単全期間監査](docs/EXACTA_DATA_AUDIT.md):
+  Gate A `CONDITIONAL_GO`、30キーは1,284 / 1,284レース、
+  2連単固有clean cohortは1,184レース
+- [program完全性・as-of監査](docs/PROGRAM_AS_OF_AUDIT.md):
+  候補16特徴は7,704艇行で欠損0だが、過去snapshotの時点証明がなく
+  Gate P `NO_GO_HISTORICAL_CONFIRMATORY_USE`
+- [時点付きsource調査](docs/TIMESTAMPED_SOURCE_RESEARCH.md):
+  将来program候補はHold、採用可能なpre-close odds源がなく
+  Gate D `NO_GO_NO_ADOPTABLE_SOURCE`
+- [研究protocol v1](docs/RESEARCH_PROTOCOL.md):
+  仮説、特徴、fold、開催節bootstrap、停止条件を固定したが、実行はHold
+
+この結果により、2連単schema、Plackett–Luce、数値依存、nested評価、
+future holdout、オッズ収集は実装していません。
 
 固定閾値1.00を後から調整せず、学習2026-05-01〜06-15、評価
 2026-06-16〜07-23で一度実行した最小バックテストは次の結果でした。
@@ -191,7 +217,8 @@ P(組み合わせ c) = (count(c) + α) / (N + 120α)
 
 ## 中心となる計算
 
-ある買い目の推定的中確率を `p`、オッズを `o` とすると、1円あたりの期待回収額は次の通りです。
+ある買い目のclean cohort条件付き推定的中確率を `p`、時点未確認の歴史
+オッズを `o` とすると、現行出力のpoint estimateは次の通りです。
 
 ```text
 期待回収率 = p × o
@@ -200,7 +227,13 @@ P(組み合わせ c) = (count(c) + α) / (N + 120α)
 
 例：推定的中確率10%、オッズ12.0倍なら、期待回収率は1.20、期待利益率は20%です。
 
-ただし、難しいのは掛け算ではなく `p` の推定です。オッズから逆算した確率だけを使っても市場価格を言い換えるだけなので、独立した確率モデルが必要です。
+ただし、これは返還確率を含む厳密な実購入EVではありません。settlement-aware
+returnには少なくとも `P(win) × odds + P(refund) × refunded_stake` が必要で、
+現行モデルは `P(refund)` を推定しません。バックテストの総払戻には、結果から
+判明した実現返還だけを加算します。
+
+難しいのは掛け算ではなく `p` の推定です。オッズから逆算した確率だけを
+使っても市場価格を言い換えるだけなので、独立した確率モデルが必要です。
 
 ## データ源
 
@@ -331,3 +364,7 @@ AI共同作業者は、次の順で読んでください。
 5. `docs/HANDOFF.md`
 
 現在の正確な再開地点は `docs/HANDOFF.md` にあります。
+
+## ライセンス
+
+[MIT License](LICENSE) です。

@@ -13,6 +13,11 @@ Result: **conditional recommendation for revised Option A**
 あるChatGPTの月野によるレビューではありません。コードやプロジェクトの
 実装変更は行っていません。
 
+その後の月野レビューは `docs/TSUKINO_DESIGN_REVIEW.md` が要約し、
+Issue #1の月野コメントを正本とします。特に、ゲートを一本の直列にした点と、
+Brier / ECE等を複合hard passにした点は月野レビューで修正され、
+次期方針へ反映済みです。
+
 ## 1. 結論
 
 Option Aの方向性は妥当ですが、そのまま全実装を開始するのは早いです。

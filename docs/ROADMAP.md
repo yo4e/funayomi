@@ -1,6 +1,6 @@
 # FunaYomi Roadmap
 
-Updated: 2026-07-24
+Updated: 2026-07-26
 
 このロードマップは、FunaYomiを「小さく検証し、結果が悪くても正直に止められる」順序で進めるためのものです。
 
@@ -95,6 +95,7 @@ Work:
 5. 欠損・異常値の除外
 6. `PASS` 判定
 7. 人間が読める根拠表示
+8. `RESEARCH_CANDIDATES`、`actionable: false`、返還確率未モデル化を明示
 
 Exit condition:
 
@@ -104,7 +105,7 @@ Exit condition:
 
 ## Phase 4 — Walk-forward backtest
 
-Status: **in progress — fixed split and retrospective threshold holdout complete**
+Status: **research core complete — confirmatory future holdout not started**
 
 Goal: 未来情報なしで、期待値閾値ごとの過去成績と不確実性を測る。
 
@@ -145,28 +146,43 @@ Current evidence:
 - 複数foldのrolling walk-forward、真に未使用の将来期間、不確実性評価は
   未実施
 
-### Next-direction proposal — awaiting owner decision
+### Research hardening and Work package 0
 
-Phase 4の次に何を検証するかは未決定です。
-`docs/NEXT_PHASE_PROPOSAL.md` は、2連単を唯一のprimary confirmatory
-bet typeとする監査先行Option Aを暫定推奨する草案です。
-`docs/SUBAGENT_DESIGN_REVIEW.md` の内部レビューは反映済みですが、
-月野の実レビューは未了です。
+Status: **complete (2026-07-24)**
 
-判断前の境界:
+月野レビュー後、山田さんはOption A、2連単primary、Work package 0、
+Issue #1 hardening、MITを承認しました。
 
-- Go候補: 2連単全期間監査、program as-of監査、research protocol策定、
-  合法な時刻付きオッズ源の調査
-- Hold: 賭式schema、Plackett–Luce、nested walk-forward、future holdout
-- No-Go: UI、当日予想、収益性主張、自動投票・実資金操作
+Completed:
 
-この記録はPhase 7や新マイルストーンの開始を意味しません。月野の実レビューを
-反映し、山田さんがOption A / B / Cと最初の作業範囲を決めた後に
-ロードマップを更新します。
+- Issue #1の出力をresearch-only / non-actionable化
+- 返還確率を含まないpoint estimateであることをcode / README / data contractへ
+  明記
+- Python 3.9 / 3.14の最小GitHub Actions CI
+- MIT `LICENSE`
+- 2連単全期間監査:
+  Gate A conditional Go、2連単固有clean 1,184レース
+- program as-of監査:
+  16特徴は完全、historical Gate P No-Go
+- source調査:
+  prospective program候補はHold、Gate D No-Go
+- machine-readable research protocol:
+  仮説、特徴、fold、開催節bootstrap、停止条件を固定
+
+Current boundary:
+
+- Conditional Go: retrospectiveな2連単probability contract
+- Hold: 賭式schema、Plackett–Luce、数値依存、nested evaluation、E1
+- No-Go: historical programによる確認的評価、価格収集、E2、UI、当日予想、
+  収益性主張、自動投票・実資金操作
+
+次の判断は、公式翌日番組LZHの利用許可・field契約を確認し、
+prospective program snapshot収集の設計だけを新しい作業packageとして
+始めるかです。それまでは新実装を開始しません。
 
 ## Phase 5 — Web UI
 
-Status: **blocked by Phase 4**
+Status: **blocked by Product Gate**
 
 Goal: モバイルで期待値ランキングとバックテストを読める研究用UIを作る。
 
@@ -195,13 +211,14 @@ Exit condition:
 
 ## Phase 6 — Current-day analysis
 
-Status: **future**
+Status: **blocked by Gate P / Gate D**
 
 Goal: 歴史的検証が成立した場合だけ、当日データで期待値を計算する可能性を調べる。
 
 Possible sources:
 
 - Boatrace Open API for same-day program and preview data
+- 公式翌日番組LZH（利用許可とfield監査後だけ）
 - A separately reviewed, lawful and stable source for current odds
 
 Required work:

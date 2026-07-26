@@ -1,17 +1,19 @@
 # FunaYomi 次期方針案
 
-Updated: **2026-07-24**
+Updated: **2026-07-26**
 
-Status: **internal sub-agent reviewed draft — awaiting review by Tsukino
-(the project designer in ChatGPT)**
+Status: **Option A selected / Work package 0 complete / implementation checkpoint**
 
 この文書は、現行の3連単基準モデルとバックテスト結果を受けて、次に何を
-検証するかを決めるための設計案です。実装開始の許可ではありません。
+検証するかを決めるための設計です。山田さんは2026-07-24にOption A、
+2連単primary、Work package 0、Issue #1 hardening、MITを承認しました。
+Work package 0を完了しましたが、次段のモデル実装許可ではありません。
 
-`docs/SUBAGENT_DESIGN_REVIEW.md` のCodex内部レビューは反映済みです。
-この草案はまだ月野によるレビューを受けていません。月野のレビュー結果は、
-山田さんから受け取った後に出典を明記して反映します。内部レビューと
-月野のレビューを混同しません。
+`docs/SUBAGENT_DESIGN_REVIEW.md` のCodex内部レビューと、
+`docs/TSUKINO_DESIGN_REVIEW.md` の月野レビューを反映済みです。月野レビューの
+原文は
+[`Issue #1 comment`](https://github.com/yo4e/funayomi/issues/1#issuecomment-5066592698)
+を正本とします。
 
 ## 1. 現在わかっていること
 
@@ -26,6 +28,8 @@ Status: **internal sub-agent reviewed draft — awaiting review by Tsukino
    断定できない。
 6. 2026-01-01〜07-23の結果はすでに監査・探索に使用済みであり、今後の
    「完全未使用テスト」として扱えない。
+7. 現行の期待回収率 `P(win) × odds` は返還確率を含まず、clean cohortの
+   条件付き頻度に基づくpoint estimateである。厳密な実購入EVではない。
 
 したがって、次に優先すべきなのは閾値の再調整ではなく、確率モデルの構造、
 賭式の次元、評価方法、購入可能オッズの時点を分けて改善することです。
@@ -37,8 +41,11 @@ Status: **internal sub-agent reviewed draft — awaiting review by Tsukino
 目的は、program cutoffで利用可能と証明できる情報だけを使い、枠番頻度
 モデルより較正の良い確率を作れるか確認することです。
 
-唯一のprimary confirmatory bet typeは **2連単** とし、主仮説を次に固定する
-案です。
+Track Aの推定対象は、F/L・返還等を除外した契約上のclean raceにおける
+条件付き順位確率です。無条件の舟券収益は推定しません。
+
+唯一のprimary confirmatory bet typeは **2連単** とし、主仮説を次に
+固定しました。
 
 > program特徴Plackett–Luceモデルは、真の未来データにおける2連単の
 > log lossを、平滑化枠番頻度モデルより改善するか。
@@ -54,7 +61,8 @@ Status: **internal sub-agent reviewed draft — awaiting review by Tsukino
 妥当性を検証しやすいからです。全賭式・全モデル・全購入規則の試行を
 同じ台帳へ残します。
 
-clean cohort 1,183レースを単純にカテゴリ数で割ると、参考値は次の通りです。
+2連単固有clean cohort 1,184レースを単純にカテゴリ数で割ると、参考値は
+次の通りです。
 
 | 賭式 | 結果カテゴリ数 | 1カテゴリあたり参考件数 |
 |---|---:|---:|
@@ -62,9 +70,10 @@ clean cohort 1,183レースを単純にカテゴリ数で割ると、参考値�
 | 2連単 | 30 | 約39 |
 | 3連単 | 120 | 約10 |
 
-これは実際の適格件数や分布を保証しません。Turnmark原本に `win` と
-`exacta` のオッズ・払戻キーが存在することだけは確認済みですが、全期間の
-完全性、欠場、F/L、返還、不成立、同着はまだ賭式別に監査していません。
+全期間監査では、2連単30キーが全1,284レースに存在し、2連単固有clean
+cohortは1,184、歴史価格・精算監査可能cohortは1,265でした。Gate Aは
+retrospectiveな確率契約に限る `CONDITIONAL_GO` です。詳細は
+`docs/EXACTA_DATA_AUDIT.md` に固定しました。
 
 また、現在のprogram availabilityは `pre_race_timestamp_unverified` です。
 programという名称だけを根拠に事前情報と見なしません。Gate Pで特徴ごとに
@@ -76,9 +85,11 @@ programという名称だけを根拠に事前情報と見なしません。Gate
 - race closeとの時間差
 - 許可するprediction cutoff
 
-歴史programのas-of時点を証明できない場合、既存データはretrospective
-developmentに限定します。真の未来holdoutでは、結果公開前に取得・保存した
-program snapshotだけを使います。
+監査の結果、候補16特徴は全7,704艇行で完全でしたが、provider観測時刻は0、
+手元cacheは全件締切後でした。Gate Pは
+`NO_GO_HISTORICAL_CONFIRMATORY_USE` とし、既存データをretrospective
+development以外へ使いません。公式の翌日番組LZHは将来候補ですが、許可と
+field監査前なので収集を開始していません。
 
 ### Track B — 購入可能価格の研究
 
@@ -94,25 +105,36 @@ program snapshotだけを使います。
 - 利用条件が確認できる合法・安定・低頻度の取得方法だけを採用
 - BOAT RACE公式サイトの無許可高頻度スクレイピングを作らない
 
-使用可能な時刻付きオッズ源はまだ選定していません。データ源調査と収集開始は、
-別の明示的な判断ゲートです。これが成立しない間、正式な未来評価はlog loss、
-Brier score、較正だけとし、EV選択・ROIは
-`historical_snapshot_time_unknown` による探索結果に限定します。
+一次資料を調査しましたが、合法・安定・時点付き・pre-closeを同時に満たす
+採用可能なオッズ源は見つかりませんでした。Gate Dは
+`NO_GO_NO_ADOPTABLE_SOURCE` です。収集は開始せず、E2とEV・買い目表示は
+停止します。詳細は `docs/TIMESTAMPED_SOURCE_RESEARCH.md` に記録しました。
 
 経済評価では、decision時点で観測したオッズ、実払戻、decision後の価格変化を
 分離し、締切までに表示edgeが消えた割合も記録します。
+
+Track Bの推定対象は、F/L・返還を含むsettlement-aware returnです。1円stakeの
+概念式は次ですが、返還eventと部分返還の契約はGate D / E2前に賭式別に
+定義します。
+
+```text
+expected_settled_return = P(win) × odds + P(refund) × refunded_stake
+```
+
+現行ランキングは `P(refund)` をモデル化していないため、この値ではありません。
 
 ## 3. 次の確率モデル候補
 
 ### 3.1 比較対象
 
-複雑なモデルだけを単独で評価せず、同じfoldで次を比較します。
+v1のprimary比較は、同じfoldの次の2モデルだけです。
 
-1. 一様分布
-2. 現行の平滑化枠番頻度モデル
-3. 枠番だけのPlackett–Luceモデル
-4. program特徴を使う正則化Plackett–Luceモデル
-5. 正規化市場暗黙確率
+1. 平滑化枠番2連単頻度baseline（30通り、α=1）
+2. program特徴を使う正則化Plackett–Luceモデル
+
+一様30通りと正規化市場暗黙確率はdescriptive referenceです。市場価格は
+時点不明なのでprimaryへ使いません。枠番だけのPlackett–Luceや別アルゴリズム
+はv1へ追加せず、必要なら新protocolへ分けます。
 
 gradient boosting等は、この段階では追加しません。透明な順位モデルが
 基準モデルを上回らないうちに候補数を増やすと、多重比較だけが増えるためです。
@@ -198,8 +220,8 @@ machine-readable protocolで、次を全て列挙してhashを固定します。
 
 - primary: log loss
 - secondary: Brier score、calibration curve、ECE、top-choice hit rate
-- calibration手法を使う場合はvalidation期間だけでfit
-- calibration手法も1候補として試行数へ数える
+- v1のpost-hoc calibrationはnone
+- 将来calibrationを追加する場合は新protocolとし、validationだけでfit
 - 高EV帯は予測確率、実績頻度、標本数を同時に表示
 
 ## 4. 賭式拡張の設計
@@ -242,18 +264,20 @@ Wager specification
 
 ```text
 外側training内をさらに時系列分割
-→ 内側validationで前処理・L2・較正を選択
+→ 内側validationで前処理・L2を選択
 → 外側shadow foldを一度だけ評価
 → 1か月進めて繰り返す
 ```
 
-fold境界、モデル候補、特徴、正則化候補、較正方法、閾値候補は実行前に
-機械可読設定へ固定します。外側shadow foldをモデル・特徴・前処理・較正の
+fold境界、モデル候補、特徴、正則化候補、較正方法は
+`protocols/ashiya_exacta_pl_v1.json`へ機械可読な形で固定しました。
+外側shadow foldをモデル・特徴・前処理・較正の
 選択へ再利用しません。外側結果を見て候補を増やした場合は、別protocol・
 別試行として記録します。
 
-不確実性の再標本化は、舟券や単一レースを独立と見なしません。同一開催内の
-相関を保つため、開催または開催日blockでbootstrapします。
+不確実性の再標本化は、舟券や単一レースを独立と見なしません。開催節を
+独立blockとしてprotocolへ固定しました。全期間で20節を一意に再構成でき、
+完全18、期間端のpartial 2、曖昧境界0でした。
 
 ### 5.2 真の未来holdout
 
@@ -263,27 +287,31 @@ fold境界、モデル候補、特徴、正則化候補、較正方法、閾値�
 
 ### E1 — probability holdout
 
-log loss、Brier score、較正だけをconfirmatoryに評価します。
+clean race条件付きの2連単順位確率を対象とし、log lossをprimary、
+Brier scoreと較正をsecondaryに評価します。
 
 提案する最低条件:
 
 - holdout開始日は方針承認時に固定
 - 最低300の適格芦屋レース
 - かつ最低3暦月
+- 最低12開催節
 - 予測を結果公開前に保存
 - モデル、係数、特徴定義をholdout中に変更しない
 - 変更が必要なら、その時点でholdoutを打ち切り、新しい試行として開始
 
-300レース・3か月は最低線であり、十分な証拠を保証しません。開始前に
-development dataの開催日block bootstrapで、paired log-loss差の目標CI幅に
-必要な標本数を定めます。終了は「必要標本数と3暦月の遅い方」、最大12暦月と
-し、最大期間で精度不足なら `INCONCLUSIVE` と報告します。
+300レース・3か月は最低線であり、十分な証拠を保証しません。開始前に、
+選択済みblock単位のdevelopment bootstrapでpaired log-loss差の目標CI幅に
+必要なレース数と独立block数を定めます。終了は「必要レース数、最低独立
+block数、3暦月を全て満たした時点」、最大12暦月とし、最大期間で精度不足なら
+`INCONCLUSIVE` と報告します。
 
 ### E2 — economic holdout
 
 Gate Dを通過した時刻付き購入可能オッズがある場合だけ、EV・仮想購入・ROIを
 confirmatoryに評価します。
 
+- 推定対象はF/L・返還を含むsettlement-aware return
 - 購入規則は1つだけ事前固定
 - decision oddsと実払戻を分離
 - 予測、選択、オッズsnapshotを結果公開前にappend-only保存
@@ -330,7 +358,20 @@ descriptive referenceに限定します。
 
 ## 6. 判断ゲート
 
-### Gate A — 2連単データ契約
+ゲートは一本の直列ではなく、二つの経路です。
+
+```text
+確率品質: Gate A + Gate P -> Gate B -> Gate E1
+価格・収益: Gate D -> Gate E2
+
+研究用確率表示: Gate E1 -> Product Gate
+EV・買い目表示: Gate E1 + Gate D + Gate E2 -> Product Gate
+```
+
+Gate DはGate E1の前提ではありません。両経路はWork package 0で並行調査でき、
+EV・買い目を含むProduct Gateで初めて合流します。
+
+### Gate A — 2連単データ契約（Conditional Go）
 
 Go条件:
 
@@ -345,7 +386,10 @@ No-Go:
 - 返還や不成立を安全に精算できない
 - primaryのモデル比較に必要な適格件数を確保できない
 
-### Gate P — program as-of契約
+実測は2連単固有clean 1,184レース、開催節20、integrity blocker 0です。
+未観測の不成立・top-2同着・複数払戻は将来fail-closedとする条件付きGoです。
+
+### Gate P — program as-of契約（Historical No-Go）
 
 Go条件:
 
@@ -360,24 +404,29 @@ No-Go:
   混ぜる
 - 結果公開後の上書きや後知恵の特徴追加を検出できない
 
+実測ではprovider timestamp 0、手元cacheは比較可能な1,284レース全て締切後
+でした。historical confirmatory useはNo-Goです。
+
 ### Gate B — 確率モデル
 
-Gate A / P通過後、protocolへ次の数値基準を固定して判定します。
+Gate A / P通過後、次をhard pass条件として判定します。
 
 - primary statisticは、各外側shadow raceの
   `log_loss_PL - log_loss_frequency_baseline`
-- 開催日block bootstrapの95%区間の上限が `0` 未満
-- `K >= 3` の外側foldのうち `ceil(2K / 3)` 以上でlog lossが改善方向
-- pooled Brier差は `Brier_PL - Brier_baseline <= 0`
-- 10個の等件数binで計算するECEはbaseline比 `+0.01` 以内
+- protocolで選択したblock bootstrapの95%区間の上限が `0` 未満
 - 決定性、確率和、漏洩防止テストを満たす
 
-ここでいう95%区間の方式、blockの定義、ECEのbin境界、欠測時の扱いは実行前に
-protocolへ固定します。基準を満たさない場合、外側結果を見ながら特徴やモデルを
-追加せず、「基準モデル改善を確認できず」と記録します。変更案は新しいprotocol
-として次の試行へ分けます。
+外側foldごとの改善方向、Brier score、calibration curve、ECEはsecondary /
+guardrailとして全て報告しますが、現時点の `2/3`、Brier `<= 0`、ECE
+`+0.01`を根拠の薄い複合hard passにはしません。hard marginを追加する場合は、
+development dataで測定精度と検出可能差を確認してからprotocolへ固定します。
 
-### Gate D — 購入可能オッズ
+95%区間の方式、blockの定義、fold、ECEのbin境界、欠測時の扱いは実行前に
+protocolへ固定します。primary基準を満たさない場合、外側結果を見ながら特徴や
+モデルを追加せず、「基準モデル改善を確認できず」と記録します。変更案は
+新しいprotocolとして次の試行へ分けます。
+
+### Gate D — 購入可能オッズ（No-Go）
 
 Go条件:
 
@@ -389,17 +438,20 @@ Go条件:
 満たさない場合、EV・ROIは探索的な歴史研究に限定し、E2、UI、当日分析へ
 進みません。
 
+公開資料の範囲で採用可能なsourceは0件でした。
+
 ### Gate E1 — 真の未来における確率品質
 
 開始条件:
 
 - Gate A / P / Bを通過
 - primaryモデル、baseline、特徴、係数、protocolを凍結
-- 開始日、必要標本数、目標CI幅、最大12暦月を固定
+- 開始日、必要レース数、最低独立block数、目標CI幅、最大12暦月を固定
 - 結果公開前の予測をappend-only保存
 
-終了時は、最低300適格レースかつ3暦月を満たしたうえで、Gate Bと同じ
-primary statistic、block bootstrap、Brier、ECEを一度だけ計算します。
+終了時は、最低300適格レース、3暦月、事前固定した最低独立block数を全て
+満たしたうえで、Gate Bと同じprimary statistic、block bootstrap、Brier、
+ECEを一度だけ計算します。
 95%区間の上限が `0` 未満なら主仮説をsupport、最大期間でも必要標本数や
 目標CI幅へ達しなければ `INCONCLUSIVE`、それ以外はnot supportedとします。
 
@@ -408,6 +460,7 @@ primary statistic、block bootstrap、Brier、ECEを一度だけ計算します�
 開始条件:
 
 - Gate Dを通過
+- F/L・返還を含むsettlement contractを凍結
 - 購入規則、decision cutoff、1点stake、最大race exposureを1組だけ固定
 - 必要標本数または目標CI幅と、最大終了期間を固定
 - 予測、選択、decision oddsを結果公開前にappend-only保存
@@ -429,59 +482,75 @@ primary statistic、block bootstrap、Brier、ECEを一度だけ計算します�
 
 このゲートを通っても、自動投票・実資金操作は対象外です。
 
-## 7. 方針を承認した場合の作業順
+## 7. 承認と作業順
 
-現時点では、どの作業packageも開始承認されていません。修正版Option Aを
-選んだ場合でも、最初の承認範囲はWork package 0だけとし、その結果を見て
-実装へ進むか再判断します。
+山田さんはIssue #1 hardeningとWork package 0だけを承認しました。
+両方を完了し、次段はDecision checkpointで停止しています。
 
-### Work package 0 — 監査とresearch protocol
+### Pre-merge hardening — complete
 
-- Turnmarkの2連単構造を全期間監査
-- program特徴のas-of可用性をfield単位で監査
-- 主仮説、特徴、前処理、fold、選択基準、停止条件をprotocolへ固定
-- 合法な時刻付きオッズ源を、収集開始せず調査
-- `docs/DATA_CONTRACT.md` へ追記
-- Gate A / Pの結果と、Gate B用protocolをレビュー
+- [x] 現行期待回収率が返還確率を含まないpoint estimateであるとREADME、
+  `docs/DATA_CONTRACT.md`、JSON metadataへ明記
+- [x] JSONへ `refund_probability_mode: "not_modeled"`、
+  `actionable: false`、`strategy_status: "historical_research_only"` を追加
+- [x] textの `CANDIDATES` を `RESEARCH_CANDIDATES` へ変更し、実購入不可を表示
+- [x] Python 3.9と実装時の安定版Pythonによる最小GitHub Actions CI
+- [x] 山田さんの明示選択によりMIT `LICENSE` を追加
+
+これは新しい予測モデルを作る作業ではなく、現在の研究コアを誤用されにくくし、
+第三者が検証できる状態へ整える作業です。
+
+### Work package 0 — complete
+
+- [x] Turnmarkの2連単構造を全期間監査 — Gate A conditional Go
+- [x] program特徴のas-of可用性をfield単位で監査 — historical Gate P No-Go
+- [x] 主仮説、特徴、前処理、fold、開催節bootstrap、停止条件を
+  `protocols/ashiya_exacta_pl_v1.json` へ固定
+- [x] 合法な時刻付きオッズ源を、収集開始せず調査 — Gate D No-Go
+- [x] `docs/DATA_CONTRACT.md` へ追記
+- [x] Gate A / P / Dと、Gate B用protocolを文書化
 
 ### Decision checkpoint — 実装するか
 
-- Gate A / PがGoなら、賭式境界とモデル実装の開始可否を山田さんが判断
-- いずれかがNo-Goなら、停止またはOption B / Cへの変更を判断
-- 数値依存とCI追加をこの時点で承認
+- Gate Aはconditional Goだが、historical Gate PがNo-Goなので、賭式境界と
+  モデル実装は開始しない
+- 次は、公式翌日番組LZHの利用許可・field監査・将来snapshot収集設計を
+  新しい作業packageとして始めるか、Option Cとして停止・蓄積待ちにするかを
+  山田さんが判断
+- `numpy` / `scipy`、schema、モデル、nested evaluationは引き続きHold
 
-### Work package 1 — 賭式境界
+### Work package 1 — 賭式境界（Hold）
 
 - 現行3連単動作を壊さない賭式仕様を追加
 - schema versionと互換方針を決定
 - 2連単の取得、正規化、精算、text / JSON
 - 例外系を含む自動テスト
 
-### Work package 2 — 確率モデル
+### Work package 2 — 確率モデル（Hold）
 
-- 枠番Plackett–Luce
+- 枠番2連単頻度baseline
 - program特徴Plackett–Luce
 - 学習期間限定の前処理
 - 係数、特徴、支持数、fingerprint
 - 単勝・2連単・3連単の確率整合性
 
-### Work package 3 — 事前固定nested walk-forward
+### Work package 3 — 事前固定nested walk-forward（Hold）
 
 - machine-readable experiment manifest
 - 内側validationと外側shadow foldを分けたexpanding monthly folds
 - baseline、較正、全試行台帳
-- 開催日block bootstrapによる予測品質
+- 開催節block bootstrapによる予測品質
 - 再現レポート
 - Gate B判定
 
-### Work package 4 — E1 probability holdout
+### Work package 4 — E1 probability holdout（Hold）
 
 - 開始日、必要標本数、CI幅、最大期間を固定
 - 結果前の予測をappend-only保存
 - 完了までモデルを凍結
 - 完了時に一度だけ正式評価
 
-### Work package 5 — E2 economic holdout
+### Work package 5 — E2 economic holdout（Gate D No-Go）
 
 - Gate D通過後だけ開始
 - 購入規則とdecision cutoffを1組だけ固定
@@ -504,23 +573,27 @@ Plackett–Luceの安定した最適化には数値計算ライブラリが有�
 十分に検証された数値計算を使う方が正しさと再現性を高めやすいためです。
 依存追加はDecision checkpointでの明示的な承認事項とします。
 
-数値依存を追加する時点でGitHub Actionsを導入し、`pyproject.toml`で宣言する
-最小Pythonと、その実装時の安定版Pythonのmatrixで、install、全unit test、
-compile確認を実行します。現在はGitHub Actionsもopen PRもありません。
+最小GitHub Actionsはpre-merge hardeningで導入済みです。`pyproject.toml`で宣言する
+Python 3.9と実装時の安定版Pythonのmatrixで、install、全unit test、
+compile確認を実行します。数値依存を追加する場合は同じmatrixへ追加します。
+open PRはありません。
+
+山田さんの明示選択により、`pyproject.toml`の宣言に対応するMIT
+`LICENSE`を追加済みです。
 
 その他の未決定:
 
-- feature interactionの固定集合
-- calibration手法
-- nested expanding-windowの具体的なfold境界
-- Gate B / E1の目標CI幅と必要標本数
+- 公式翌日番組LZHの利用・保存許可とfield対応
+- prospective program snapshotの開始日と固定cutoff
+- 数値依存、賭式schema、モデル実装を承認する条件
+- E1の目標CI幅（Gate B後、E1開始前のaddendumで固定）
 - E2の購入規則、目標CI幅、最大期間
-- 時刻付きオッズ源
+- 採用可能な時刻付きオッズ源
 - 未来holdout開始日
 
 ## 9. 選択肢
 
-### Option A — 監査先行の二本立て（草案内の暫定推奨）
+### Option A — 監査先行の二本立て（選択済み）
 
 - 最初は2連単・program as-of・オッズ源の監査とprotocol策定だけ
 - Gate A / P後に、2連単primaryのPlackett–Luce実装を再判断
@@ -573,44 +646,45 @@ compile確認を実行します。現在はGitHub Actionsもopen PRもありま�
 - 当面のモデル研究が進まない
 - 時刻付きオッズ源が見つからない場合、停滞する
 
-## 10. 月野へのレビュー依頼事項
+## 10. 月野レビュー結果
 
-この草案を月野へ渡す際は、少なくとも次を確認します。
+月野テンプレクスは
+[`Issue #1 review comment`](https://github.com/yo4e/funayomi/issues/1#issuecomment-5066592698)
+で、Issue #1研究コアを条件付き承認し、Option A / Work package 0のGoを
+支持しました。要約は `docs/TSUKINO_DESIGN_REVIEW.md` に保存しています。
 
-1. 2連単を唯一のprimary confirmatory bet typeに固定する主仮説は妥当か
-2. Gate A → P → B → D → E1 → E2 → Productの順序に抜けがないか
-3. Plackett–Luceのtop-2 partial likelihood、L2、IIAの扱いは妥当か
-4. program特徴のas-of契約で未来情報漏洩を防げるか
-5. nested expanding-windowと開催日block bootstrapは適切か
-6. Gate Bの95%区間、fold整合、Brier、ECE `+0.01`という基準は妥当か
-7. E1 / E2の分離、最低300レース・3暦月・最大12暦月は妥当か
-8. Work package 0だけをGo候補とし、schema・モデル実装をHoldする境界は
-   妥当か
-9. 見落としている停止条件、データ契約、倫理・プロダクト上の危険はないか
+この計画へ反映した指摘:
 
-レビューでは、blocking issue、修正推奨、承認できる点を分け、根拠も記録して
-もらいます。
+1. 確率品質 `A + P → B → E1` と価格・収益 `D → E2`を別経路にした
+2. Gate Bのhard passをpaired log-loss差のblock bootstrap区間へ絞った
+3. Brier、ECE、fold方向をsecondary / guardrailへ変更した
+4. E1に最低独立block数と事前固定した一つのbootstrap単位を追加した
+5. E1をclean race条件付き順位確率、E2を返還込みsettlement-aware returnと
+   定義した
+6. Issue #1のpre-merge hardeningとして、EV仮定、research-only表示、
+   最小CI、LICENSE判断を分離した
 
-## 11. 暫定推奨と決定待ち
+月野はコードとテスト内容をレビューしましたが、月野の環境からcloneして
+テストを再実行できていません。独立実行証跡はCIで補います。
 
-この草案におけるCodexの暫定推奨は、
-**監査先行のOption Aを条件付きで採用すること**です。これは月野の見解では
-ありません。
+## 11. Work package 0の結果と次の判断
 
-Go / Hold / No-Goは次の通りです。
+山田さんは、Codexと月野が推奨した監査先行Option A、2連単primary、
+Work package 0、Issue #1 hardening、MITを承認しました。今夜の承認範囲は
+完了しています。
 
-- Go候補: 2連単全期間監査、program as-of監査、research protocol策定、
-  合法な時刻付きオッズ源の調査
+現在のGo / Hold / No-Go:
+
+- Complete: Issue #1 hardening、MIT、2連単監査、program as-of監査、
+  research protocol、時点付きsource調査
+- Conditional Go: 2連単retrospective probability contract
 - Hold: 賭式schema、Plackett–Luce、nested walk-forward、future holdoutの実装
-- No-Go: UI、当日予想、収益性主張、自動投票・実資金操作
+- No-Go: historical programによる確認的評価、価格収集、E2、UI、当日予想、
+  収益性主張、自動投票・実資金操作
 
-次に山田さんが決める事項:
+次のDecision checkpointは一つです。
 
-1. 月野のレビュー結果を反映した後、Option A / B / Cのどれを採用するか
-2. Option Aなら、Work package 0だけを開始してよいか
-3. 2連単を唯一のprimary confirmatory bet typeとする主仮説でよいか
-4. 合法な時刻付きオッズ源の調査を含めてよいか
+> 公式翌日番組LZHについて利用許可とfield契約を確認し、結果公開前の
+> prospective program snapshot収集だけを次の作業packageとして設計するか。
 
-`numpy` / `scipy`、schema、モデル実装は、Gate A / P後のDecision checkpointで
-別途判断します。月野のレビューと山田さんの決定までは新しいマイルストーンを
-開始しません。
+この判断までは `numpy` / `scipy`、schema、モデル、定期収集を開始しません。

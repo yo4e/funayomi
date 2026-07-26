@@ -2,11 +2,17 @@
 
 import math
 from dataclasses import dataclass
-from typing import Any, Dict, List, Mapping, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 from .combinations import TRIFECTA_COMBINATIONS
 from .domain import NormalizedRace
 from .model import ProbabilityPrediction
+from .safety import (
+    ACTIONABLE,
+    REFUND_PROBABILITY_MODE,
+    RESEARCH_ONLY_NOTICE,
+    STRATEGY_STATUS,
+)
 
 
 @dataclass(frozen=True)
@@ -115,11 +121,14 @@ def rank_race(
     )
     qualifying_count = sum(item.qualifies for item in ranked)
     warnings = [
-        "Turnmarkオッズのobserved_atは不明です。実購入可能な時点の価格とは断定できません。"
+        "Turnmarkオッズのobserved_atは不明です。実購入可能な時点の価格とは断定できません。",
+        "期待回収率はclean cohort由来のP(win)×oddsのpoint estimateです。"
+        "返還確率を含む厳密な実購入EVではありません。",
     ]
     if not market_complete:
         warnings.append(
-            "3連単120通りのオッズが揃わないため、このレースは購入判断をSKIP_DATAとします。"
+            "3連単120通りのオッズが揃わないため、このレースの研究評価を"
+            "SKIP_DATAとします。"
         )
     warnings.extend(
         issue for issue in race.issues if not issue.startswith("result_")
@@ -132,7 +141,7 @@ def rank_race(
         decision=(
             "SKIP_DATA"
             if not market_complete
-            else ("CANDIDATES" if qualifying_count else "PASS")
+            else ("RESEARCH_CANDIDATES" if qualifying_count else "PASS")
         ),
         qualifying_count=qualifying_count,
         rows=ranked,
@@ -153,6 +162,9 @@ def rank_race(
 
 def ranking_to_dict(result: RankingResult) -> Dict[str, Any]:
     return {
+        "actionable": ACTIONABLE,
+        "strategy_status": STRATEGY_STATUS,
+        "refund_probability_mode": REFUND_PROBABILITY_MODE,
         "date": result.date,
         "stadium_number": result.stadium_number,
         "race_number": result.race_number,
@@ -193,6 +205,7 @@ def ranking_to_dict(result: RankingResult) -> Dict[str, Any]:
 
 def format_ranking_text(result: RankingResult) -> str:
     header = [
+        "利用制限: " + RESEARCH_ONLY_NOTICE,
         f"日付: {result.date}",
         f"場: 芦屋 ({result.stadium_number}) / {result.race_number}R",
         f"判定: {result.decision} "

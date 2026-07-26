@@ -13,7 +13,11 @@ from funayomi.model import (
     PREDICTION_FEATURES,
     SmoothedTrifectaFrequencyModel,
 )
-from funayomi.ranking import rank_race, ranking_to_dict
+from funayomi.ranking import (
+    format_ranking_text,
+    rank_race,
+    ranking_to_dict,
+)
 
 from tests.helpers import complete_odds, make_race
 
@@ -258,7 +262,7 @@ class RankingTests(unittest.TestCase):
             threshold=1.5,
         )
 
-        self.assertEqual(result.decision, "CANDIDATES")
+        self.assertEqual(result.decision, "RESEARCH_CANDIDATES")
         self.assertEqual(result.qualifying_count, 1)
         self.assertEqual(len(result.rows), 120)
         self.assertEqual(result.rows[0].combination, "1-2-3")
@@ -381,6 +385,9 @@ class RankingTests(unittest.TestCase):
         value = ranking_to_dict(rank_race(race, self.prediction, threshold=2))
 
         self.assertEqual(value["date"], self.day.isoformat())
+        self.assertIs(value["actionable"], False)
+        self.assertEqual(value["strategy_status"], "historical_research_only")
+        self.assertEqual(value["refund_probability_mode"], "not_modeled")
         self.assertEqual(value["stadium_number"], 21)
         self.assertEqual(value["race_number"], 1)
         self.assertEqual(value["training"]["prediction_cutoff"], "program")
@@ -394,6 +401,24 @@ class RankingTests(unittest.TestCase):
         self.assertEqual(
             value["rankings"][0]["support"]["training_races"], 0
         )
+
+    def test_text_output_marks_research_candidates_as_non_actionable(self):
+        result = rank_race(
+            make_race(
+                self.day,
+                odds=complete_odds(10, {"1-2-3": 240}),
+            ),
+            self.prediction,
+            threshold=1.5,
+        )
+
+        value = format_ranking_text(result)
+
+        self.assertTrue(value.startswith("利用制限:"))
+        self.assertIn("実購入判断には使用できません", value)
+        self.assertIn("判定: RESEARCH_CANDIDATES", value)
+        self.assertNotIn("判定: CANDIDATES", value)
+        self.assertIn("返還確率を含む厳密な実購入EVではありません", value)
 
 
 if __name__ == "__main__":

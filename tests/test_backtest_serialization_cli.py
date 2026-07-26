@@ -7,7 +7,11 @@ from datetime import date
 from pathlib import Path
 from unittest.mock import patch
 
-from funayomi.backtest import backtest_to_dict, run_backtest
+from funayomi.backtest import (
+    backtest_to_dict,
+    format_backtest_text,
+    run_backtest,
+)
 from funayomi.cache import LocalCache
 from funayomi.cli import main
 from funayomi.errors import ChronologyError, DataContractError
@@ -470,6 +474,9 @@ class BacktestTests(unittest.TestCase):
         second = backtest_to_dict(self._run_mixed_backtest())
 
         self.assertEqual(first, second)
+        self.assertIs(first["actionable"], False)
+        self.assertEqual(first["strategy_status"], "historical_research_only")
+        self.assertEqual(first["refund_probability_mode"], "not_modeled")
         self.assertEqual(first["strategy"]["comparison"], ">=")
         self.assertEqual(first["strategy"]["stake_per_combination"], 100)
         self.assertEqual(
@@ -481,6 +488,14 @@ class BacktestTests(unittest.TestCase):
             json.dumps(first, ensure_ascii=False, sort_keys=True),
             json.dumps(second, ensure_ascii=False, sort_keys=True),
         )
+
+    def test_backtest_text_is_explicitly_historical_and_non_actionable(self):
+        value = format_backtest_text(self._run_mixed_backtest())
+
+        self.assertEqual(value.splitlines()[0], "FunaYomi 時系列バックテスト")
+        self.assertEqual(value.splitlines()[1][:5], "利用制限:")
+        self.assertIn("実購入判断には使用できません", value)
+        self.assertIn("返還確率をモデル化していません", value)
 
     def test_probability_quality_includes_uniform_market_and_calibration(self):
         result = run_backtest(
@@ -567,6 +582,9 @@ class CliTests(unittest.TestCase):
         self.assertEqual(first[0], 0)
         self.assertEqual(first[2], "")
         value = json.loads(first[1])
+        self.assertIs(value["actionable"], False)
+        self.assertEqual(value["strategy_status"], "historical_research_only")
+        self.assertEqual(value["refund_probability_mode"], "not_modeled")
         self.assertEqual(value["decision"], "PASS")
         self.assertEqual(len(value["rankings"]), 120)
         urlopen.assert_not_called()
@@ -595,6 +613,7 @@ class CliTests(unittest.TestCase):
         self.assertIn("場: 芦屋 (21) / 1R", stdout)
         self.assertIn("順位", stdout)
         self.assertIn("期待回収率", stdout)
+        self.assertIn("実購入判断には使用できません", stdout)
 
     def test_offline_missing_day_returns_domain_error_without_network(self):
         missing = date(2026, 5, 22)
@@ -665,6 +684,9 @@ class CliTests(unittest.TestCase):
         self.assertEqual(return_code, 0)
         self.assertEqual(stderr, "")
         value = json.loads(stdout)
+        self.assertIs(value["actionable"], False)
+        self.assertEqual(value["strategy_status"], "historical_research_only")
+        self.assertEqual(value["refund_probability_mode"], "not_modeled")
         self.assertEqual(value["metrics"]["training_races"], 1)
         self.assertEqual(value["metrics"]["evaluation_races"], 1)
         self.assertEqual(value["metrics"]["purchase_count"], 1)
