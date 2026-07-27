@@ -302,8 +302,11 @@ GitHub:
 - 月野レビュー:
   `https://github.com/yo4e/funayomi/issues/1#issuecomment-5066592698`
 - open pull request: 0
-- 新しいsandbox commitのpush / CI結果:
-  **この文書の次のpush後に更新する**
+- sandbox実装・結果commit:
+  `cd1b6cff9995c6809508fcd521eb8e1dc9fd16c5`
+- GitHub Actions:
+  Python 3.9 / 3.14のunit test・compileが成功
+  - `https://github.com/yo4e/funayomi/actions/runs/30231661083`
 
 ## Known limits
 
