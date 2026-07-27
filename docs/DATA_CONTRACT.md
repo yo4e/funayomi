@@ -1,12 +1,12 @@
 # FunaYomi Data Contract
 
-Updated: **2026-07-26**
+Updated: **2026-07-27**
 
 ## 1. 目的と適用範囲
 
 この文書は、Turnmark API v1 の日次 JSON から芦屋（場コード `21`）の
-3連単データを取得・正規化し、確率モデル、期待値ランキング、時系列評価へ
-渡す境界を定義します。
+3連単と2連単データを取得・正規化し、確率モデル、期待値ランキング、
+retrospective時系列評価へ渡す境界を定義します。
 
 初期モデルの予測時点は **出走表時点（program cutoff）** とします。
 Turnmark の `preview` と `odds` には観測時刻がないため、直前情報は保存しても
@@ -196,7 +196,7 @@ BOAT RACE公式ガイドは、F/Lとなった艇を含む舟券は全額返還�
 返還額は Turnmark の観測フィールドではなく、公式規則と100円固定購入から
 導出した値です。この導出規則と件数を出力へ残します。
 
-### 4.3 2連単のaudit-only契約
+### 4.3 2連単の監査契約とretrospective実装
 
 Work package 0では実装を広げず、raw Turnmarkの
 `odds.exacta."<1着>"."<2着>"` と `result.payouts.exacta` を全期間監査
@@ -221,9 +221,15 @@ Work package 0では実装を広げず、raw Turnmarkの
 
 Gate Aはretrospectiveな2連単確率契約に限る `CONDITIONAL_GO` です。
 不成立、top-2同着、複数払戻は実例がないため、将来観測時は契約追加まで
-fail-closedとします。これは2連単schema、モデル、ランキング、バックテストの
-実装許可ではありません。完全な結果、月別件数、manifest fingerprint、
+fail-closedとします。完全な監査結果、月別件数、manifest fingerprint、
 再現コマンドは [`EXACTA_DATA_AUDIT.md`](EXACTA_DATA_AUDIT.md) を正本とします。
+
+山田さんは2026-07-27、Gate P / Dを変更しないまま、Turnmark限定・
+retrospective・non-actionableな仮説生成sandbox（Gate X）についてだけ、
+2連単schema、programモデル、市場blend、固定予算backtestの実装を承認
+しました。これは確認的利用、当日利用、実購入可能な価格の主張を許可する
+ものではありません。実装と結果は
+[`TURNMARK_STRATEGY_SANDBOX.md`](TURNMARK_STRATEGY_SANDBOX.md) を正本とします。
 
 ## 5. Turnmark 入力構造
 
@@ -245,6 +251,8 @@ programs.stadiums."21".races."<race_number>"
 
 3連単オッズの入力パスは
 `odds.trifecta."<1着>"."<2着>"."<3着>"` です。
+2連単は `odds.exacta."<1着>"."<2着>"`、払戻は
+`result.payouts.exacta` です。
 
 ## 6. 正規化後の構造
 
@@ -252,7 +260,7 @@ programs.stadiums."21".races."<race_number>"
 
 ```json
 {
-  "schema_version": 2,
+  "schema_version": 3,
   "source": {
     "provider": "turnmark",
     "url": "...",
@@ -295,7 +303,7 @@ programs.stadiums."21".races."<race_number>"
 モーター・ボート成績など schema に定義された出走表フィールドだけを
 保存します。`result` のコース、ST、着順で欠損を補完しません。
 
-初期確率モデルが実際に読む特徴は次だけです。
+legacy 3連単基準確率モデルが実際に読む特徴は次だけです。
 
 ```text
 stadium_number
@@ -303,6 +311,12 @@ program.entry_numbers
 ```
 
 つまり、芦屋の枠番3連単の歴史頻度モデルです。
+
+2連単sandboxのprogram Plackett–Luceは、program内のentry / rankと監査済み
+14数値特徴を読みます。補完中央値、平均、標準偏差は各foldの学習期間だけで
+fitし、欠損indicatorを付けます。preview、odds、outcomeでprogramを補完
+しません。program snapshotの時点証明がないため、このモデルは
+`pre_race_timestamp_unverified`なretrospective仮説生成に限定します。
 
 ### 6.2 preview
 
@@ -312,18 +326,21 @@ program.entry_numbers
 
 ### 6.3 odds
 
-`itertools.permutations(1..6, 3)` で正本となる120通りを生成し、すべて
-`1-2-3` 形式へ変換します。
+`itertools.permutations(1..6, 3)` で3連単120通り、
+`itertools.permutations(1..6, 2)` で2連単30通りを生成し、
+それぞれ `1-2-3` / `1-2` 形式へ変換します。
 
-- 1〜6の整数3艇
-- 3艇は相互に異なる
+- 1〜6の整数2艇または3艇
+- 同一組み合わせ内の艇は相互に異なる
 - 正の number だけを有効オッズにする
 - `0`、null、文字列、負値、欠落は `null / unavailable` にする
-- 正規化後は120キーを必ず持ち、利用不能理由を `issues` に記録する
+- 正規化後は3連単120キーと2連単30キーを必ず持ち、利用不能理由を
+  `issues` に記録する
 
-120通りがすべて有効でないレースはランキングを表示しても研究評価を
-`SKIP_DATA` とし、バックテストから除外します。有効で閾値以上の候補がある
-場合の判定名は `RESEARCH_CANDIDATES` であり、購入推奨を意味しません。
+対象勝式の全通りが有効でないレースは研究評価を `SKIP_DATA` とします。
+legacy 3連単ランキングで閾値以上の候補がある場合の判定名は
+`RESEARCH_CANDIDATES`、2連単sandboxの固定portfolioは
+`RESEARCH_PORTFOLIO` で、どちらも購入推奨を意味しません。
 
 ### 6.4 outcome
 
@@ -345,6 +362,16 @@ program.entry_numbers
 実払戻、F/L返還、3連単不成立時の全返還を精算します。事故後も3連単が
 成立したレースを、結果が異常だったという理由で事後除外しません。
 
+2連単は `exacta_status`、`winning_exactas`、`exacta_payouts` を別に保存
+します。確率学習のclean cohortは、一意なtop-2、既知例外なし、1件の
+有効払戻とtop-2一致を要求します。3〜6着だけの同着は許容します。
+
+2連単sandboxのportfolioはprogram確率と30オッズだけで先に固定し、その後に
+outcomeを開きます。`standard` / `exception_settled`かつ勝ち2連単と払戻を
+一意に検証できる場合だけ精算します。F/L艇を含む選択だけ規則から返還を
+導出します。2連単不成立、top-2同着、複数払戻は観測0のため、初観測時に
+全返還や払戻を推測せず、購入があれば安全に停止します。
+
 ## 7. 例外処理規則
 
 | 状況 | 正規化 | 確率学習 | EVランキング | バックテスト |
@@ -358,6 +385,9 @@ program.entry_numbers
 | スタート後の事故・失格 | `exception_settled` | clean学習から除外 | 結果を予測へ不使用 | 候補確定後、実払戻で通常精算 |
 | 3連単払戻0件 | `trifecta_not_established` | 除外 | 結果を予測へ不使用 | 候補確定後、その勝式の購入を全返還 |
 | 3連単払戻複数/同着 | `multiple_trifecta_payouts` | 除外 | 結果を予測へ不使用 | 初期実装は安全に停止 |
+| 2連単オッズ一部欠損/0 | 30キー中null | 影響なし | 対象外 | sandboxは`SKIP_DATA` |
+| 2連単F/L | `exception_settled` | clean学習から除外 | 対象外 | portfolio確定後、F/L艇を含む選択だけ返還 |
+| 2連単不成立/top-2同着/複数払戻 | `inconsistent` / `multiple_exacta_payouts` | 除外 | 対象外 | 未観測契約のため購入があれば安全に停止 |
 | 結果欠損/矛盾 | `missing` / `inconsistent` | 除外 | 結果を予測へ不使用 | 購入があれば安全に停止 |
 
 欠場は120オッズ中60件が0となるため、結果を見る前に `SKIP_DATA` となります。
@@ -385,6 +415,8 @@ data/cache/
 - 明示的な `--refresh` だけ再取得を許す
 - 内容が変わる再取得では以前の原本とメタデータを revision に退避する
 - 正規化 schema version または原本SHAが変われば再正規化する
+- schema v2以前のcacheは、同じ原本SHAでも2連単fieldを持たないため
+  schema v3へ再正規化する
 
 同じ原本SHA、同じ期間、同じモデル設定からは同じ確率、順位、
 バックテスト値を生成します。
@@ -394,9 +426,14 @@ data/cache/
 - 予測日 `D` のモデル学習には `date < D` の結果だけを使う
 - 同日の早いレース結果も使わない
 - ランダム分割を使わない
-- 予測関数へ渡す特徴は program の場コード・枠番だけ
+- legacy 3連単予測はprogramの場コード・枠番だけを読む
+- 2連単sandboxのprogramモデルはprogram内の固定特徴だけを読み、補完と
+  標準化を学習期間だけでfitする
 - preview、odds、着順、払戻、決まり手、結果側STを確率特徴にしない
-- odds は確率を作った後に期待回収率へ掛けるだけ
+- legacy 3連単ではoddsを確率作成後のEV計算だけに使う
+- 2連単sandboxの市場確率は `1 / odds` を30通りで正規化した値であり、
+  独立した予測確率と呼ばない。program確率とのblendとportfolio価格評価に
+  使い、programモデルのfitには使わない
 - outcome は学習ラベルまたは、購入候補確定後のバックテスト精算だけに使う
 - バックテストは program・oddsで候補を固定してから outcome を開く
 - F/L・事故・不成立を、候補選択前の事後除外条件にしない
@@ -441,6 +478,10 @@ expected_settled_return
 - 現行期待回収率は返還確率を含まないpoint estimate
 - 初期モデルは枠番だけの弱い基準モデルで、個別選手差を表現しない
 - データ期間は約7か月で、収益性を断定できない
+- 2連単programモデルは頻度baselineを4fold中3foldで改善したが市場確率より
+  悪く、購入したsingle / dutchはいずれも大幅赤字
+- 公式翌日番組LZHは将来prospective program snapshotの候補としてHold。
+  利用条件・field契約は未確認で、収集していない
 
 現在の実装で検証できるのは、時点未確認の歴史価格を使った説明可能な計算核
 です。当日利用または実行可能な収益性検証へ進む前に、予測締切前に取得される

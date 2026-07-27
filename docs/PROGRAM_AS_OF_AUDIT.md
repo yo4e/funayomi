@@ -4,6 +4,11 @@ Updated: **2026-07-24**
 
 Status: **Work package 0 complete — Gate P No-Go for historical confirmatory use**
 
+Update 2026-07-27: Gate Pの結論は変わりません。その後、山田さんは
+Turnmark限定・retrospective・non-actionableな別sandboxだけをGate Xとして
+承認しました。確認的利用ではありません。現在の実装・結果は
+[`TURNMARK_STRATEGY_SANDBOX.md`](TURNMARK_STRATEGY_SANDBOX.md) が正本です。
+
 ## 1. 結論
 
 2026-01-01〜2026-07-23のTurnmark原本204日、芦屋1,284レース、

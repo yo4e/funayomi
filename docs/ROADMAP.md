@@ -1,6 +1,6 @@
 # FunaYomi Roadmap
 
-Updated: 2026-07-26
+Updated: 2026-07-27
 
 このロードマップは、FunaYomiを「小さく検証し、結果が悪くても正直に止められる」順序で進めるためのものです。
 
@@ -169,16 +169,63 @@ Completed:
 - machine-readable research protocol:
   仮説、特徴、fold、開催節bootstrap、停止条件を固定
 
-Current boundary:
+Boundary at completion of Work package 0:
 
 - Conditional Go: retrospectiveな2連単probability contract
 - Hold: 賭式schema、Plackett–Luce、数値依存、nested evaluation、E1
 - No-Go: historical programによる確認的評価、価格収集、E2、UI、当日予想、
   収益性主張、自動投票・実資金操作
 
-次の判断は、公式翌日番組LZHの利用許可・field契約を確認し、
-prospective program snapshot収集の設計だけを新しい作業packageとして
-始めるかです。それまでは新実装を開始しません。
+この時点では、次の判断を公式翌日番組LZHの確認としていました。その後、
+山田さんはLZHを将来候補としてHoldし、次の別packageを承認しました。
+
+### Turnmark exacta strategy sandbox
+
+Status: **complete (2026-07-27)**
+
+Authorization:
+
+- Turnmarkだけを使う
+- retrospective hypothesis generationだけに使う
+- 全出力をnon-actionableにする
+- Gate P / D、確認的protocol、UI、当日予想、自動投票へ拡張しない
+- 公式翌日番組LZHは廃案にせず、将来prospectiveの候補としてHoldする
+
+Completed:
+
+- schema v3: 2連単30通り、払戻、結果状態、学習・評価・精算適格性
+- program特徴Plackett–Luceとα=1枠番2連単頻度baseline
+- expanding inner validationによるL2選択とouter 4fold
+- 正規化市場確率と `λ ∈ {0, 0.25, 0.5, 1}` の幾何blend
+- 同一1,000円race budgetのprogram / blend × single / dutch 4方式
+- 開催節共通resample、20,000 bootstrap
+- 全候補、失敗、月別・開催節別結果、fingerprintのcompact ledger
+
+Evidence:
+
+- program log loss 2.6906、頻度baseline 2.8001
+- 4fold中3fold改善、pooled差 -0.1095:
+  Gate S `PASS_RETROSPECTIVE_SIGNAL_CANDIDATE`
+- 市場log loss 2.4999でprogramより良く、blendは全fold `λ=0`
+- `program_single`: 回収率0.3112、損益-506,300円、最大DD 524,000円
+- `program_dutch`: 回収率0.6081、損益-288,070円、最大DD 307,920円
+- blend 2方式: 735レース全PASS、購入0
+- dutchはsingleより下方リスクを改善したが、回収率bootstrap 95%区間
+  0.4590〜0.7719で、収益候補ではない
+
+Current boundary:
+
+- Gate P / DはNo-Goのまま
+- Gate Rはdescriptive Paretoだけで、scalar winnerなし
+- Gate U locked future Turnmark replicationは未承認
+- 同じouter期間へ結果を見た救済調整をしない
+- LZHの利用条件・field監査・収集は、将来必要になった場合だけ別判断
+
+Details:
+
+- `docs/TURNMARK_STRATEGY_SANDBOX.md`
+- `protocols/turnmark_exacta_strategy_sandbox_v1.json`
+- `experiments/turnmark_exacta_strategy_sandbox_v1.json`
 
 ## Phase 5 — Web UI
 
@@ -242,7 +289,7 @@ Status: **optional future**
 
 Possible directions:
 
-- 2連単、単勝など他賭式
+- 単勝など、2連単以外の賭式
 - 他場への展開
 - 水面・風・展示情報を含むモデル
 - rolling-window or venue-specific adaptation

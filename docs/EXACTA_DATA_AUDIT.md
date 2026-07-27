@@ -4,6 +4,11 @@ Updated: **2026-07-24**
 
 Status: **Work package 0 / Gate A — CONDITIONAL GO**
 
+Update 2026-07-27: この監査時点では実装許可ではありませんでした。その後、
+山田さんはGate P / Dを変えず、Turnmark限定・retrospective・non-actionableな
+別sandboxだけをGate Xとして承認しました。現在の実装・結果は
+[`TURNMARK_STRATEGY_SANDBOX.md`](TURNMARK_STRATEGY_SANDBOX.md) が正本です。
+
 ## 1. 結論
 
 Turnmarkの固定原本 2026-01-01〜2026-07-23 を対象に、芦屋2連単を全期間

@@ -1,8 +1,16 @@
 # FunaYomi 次期方針案
 
-Updated: **2026-07-26**
+Updated: **2026-07-27**
 
-Status: **Option A selected / Work package 0 complete / implementation checkpoint**
+Status: **historical Option A plan / Work package 0 complete / Gate X subsequently complete**
+
+2026-07-27に山田さんは、下記の旧Decision checkpointを変更し、公式翌日番組
+LZHを将来候補としてHoldしたまま、Turnmark限定・retrospective・
+non-actionableなstrategy sandboxだけをGate Xとして承認しました。
+現在の実装・結果・境界は
+[`TURNMARK_STRATEGY_SANDBOX.md`](TURNMARK_STRATEGY_SANDBOX.md) と
+[`HANDOFF.md`](HANDOFF.md) を正本とします。この文書はOption Aに至った設計と
+Work package 0の判断履歴として残します。
 
 この文書は、現行の3連単基準モデルとバックテスト結果を受けて、次に何を
 検証するかを決めるための設計です。山田さんは2026-07-24にOption A、
@@ -682,9 +690,17 @@ Work package 0、Issue #1 hardening、MITを承認しました。今夜の承認
 - No-Go: historical programによる確認的評価、価格収集、E2、UI、当日予想、
   収益性主張、自動投票・実資金操作
 
-次のDecision checkpointは一つです。
+Work package 0完了時点のDecision checkpointは次でした。
 
 > 公式翌日番組LZHについて利用許可とfield契約を確認し、結果公開前の
 > prospective program snapshot収集だけを次の作業packageとして設計するか。
 
-この判断までは `numpy` / `scipy`、schema、モデル、定期収集を開始しません。
+このcheckpointは2026-07-27のowner decisionで置き換えられました。LZHは
+廃案ではなく将来prospective候補としてHoldし、収集していません。一方、
+標準ライブラリだけの2連単schema v3、program Plackett–Luce、市場blend、
+固定予算portfolio、nested retrospective評価は、確認的protocolと分離した
+`turnmark_exacta_strategy_sandbox_v1` として完了しました。
+
+正式結果はprogramの頻度baselineに対するGate Sを3 / 4 foldで通過したものの、
+市場確率より悪く、購入した2方式は回収率0.3112 / 0.6081で大幅赤字でした。
+Gate P / DはNo-Go、Gate U locked future replicationは未承認のままです。

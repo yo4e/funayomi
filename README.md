@@ -6,15 +6,15 @@
 
 ## 現在地
 
-**Issue #1 の非UIコア（データ監査、取得・正規化、基準確率モデル、期待値ランキング、最小時系列バックテスト）を実装済みです。**
+**Issue #1 の非UIコアと、Turnmark限定の2連単retrospective strategy
+sandboxを実装済みです。**
 
 Python 3.9以上と標準ライブラリだけで動きます。ウェブUI、当日予想、
 リアルタイムオッズ、自動投票はありません。現在のコアは、時点未確認の
 歴史オッズで計算手順を検証するためのものです。出力は常に
 `actionable: false` / `historical_research_only` で、実購入判断には使えません。
 
-次期方針は、2連単を唯一の主仮説として低次元の確率モデルを検証する
-監査先行Option Aです。
+2連単を唯一の主仮説とする監査先行Option Aは、
 [`docs/NEXT_PHASE_PROPOSAL.md`](docs/NEXT_PHASE_PROPOSAL.md) に記録しています。
 Codexサブエージェントによる
 [`内部レビュー`](docs/SUBAGENT_DESIGN_REVIEW.md) と、最初の設計者である
@@ -22,7 +22,19 @@ Codexサブエージェントによる
 [`実レビュー`](docs/TSUKINO_DESIGN_REVIEW.md) を反映済みです。
 Issue #1研究コアは条件付き承認、Option A / Work package 0は支持されました。
 山田さんの承認により、Issue #1の安全化とWork package 0の監査・事前設計を
-実施しました。2連単schema、Plackett–Luce、UIの実装は開始していません。
+実施しました。
+
+さらに2026-07-27のGate X承認により、時点未確認のTurnmarkだけを使う
+`retrospective / non-actionable`な別protocolとして、schema v3の2連単30通り、
+program特徴Plackett–Luce、市場blend、同額固定予算のsingle / dutch
+portfolioを実装・評価しました。programモデルは弱い頻度baselineより
+4fold中3foldでlog lossを改善しましたが、市場暗黙確率には及ばず、購入した
+2方式はいずれも大幅赤字でした。詳細は
+[`Turnmark 2連単strategy sandbox`](docs/TURNMARK_STRATEGY_SANDBOX.md)です。
+
+公式翌日番組LZHは廃案ではなく、将来prospective snapshotが必要になった場合の
+候補としてHoldしています。収集は開始していません。UI、当日予想、
+リアルタイムオッズ、自動投票も未実装です。
 
 ## 初期スコープ
 
@@ -104,7 +116,26 @@ funayomi backtest \
 確定し、その後に結果を開いて、実払戻とF/L返還を精算します。ランダム分割や
 評価期間内の再学習はしません。
 
-### 4. テスト
+### 4. Turnmark限定2連単strategy sandbox
+
+固定cacheを使い、outer 4fold、inner L2 / blend選択、4つの固定予算方式、
+開催節block bootstrapを一括再現します。
+
+```bash
+PYTHONPATH=src:. python3 scripts/run_turnmark_strategy_sandbox.py \
+  --cache-dir data/cache \
+  --offline \
+  --bootstrap-resamples 20000 \
+  --format json \
+  --compact \
+  --code-commit-sha 40b3d860efedd79b6b51cd1cecde2eae80eddd47 \
+  --workers 4
+```
+
+出力は常に `actionable: false` です。Turnmarkのprogram・オッズ時点を
+証明できないため、実購入可能な成績や確認的検証として扱えません。
+
+### 5. テスト
 
 ```bash
 PYTHONPATH=src python -m unittest discover -s tests -v
@@ -143,7 +174,7 @@ P(組み合わせ c) = (count(c) + α) / (N + 120α)
 データ構造、型、返還・不成立、オッズと払戻の照合、キャッシュ契約は
 [`docs/DATA_CONTRACT.md`](docs/DATA_CONTRACT.md) に記録しています。
 
-### 次期研究のWork package 0
+### 2連単Work package 0とstrategy sandbox
 
 山田さんの承認後、2連単を唯一のprimary仮説とする前提監査だけを実施しました。
 
@@ -159,8 +190,32 @@ P(組み合わせ c) = (count(c) + α) / (N + 120α)
 - [研究protocol v1](docs/RESEARCH_PROTOCOL.md):
   仮説、特徴、fold、開催節bootstrap、停止条件を固定したが、実行はHold
 
-この結果により、2連単schema、Plackett–Luce、数値依存、nested評価、
-future holdout、オッズ収集は実装していません。
+この監査結果だけでは確認的protocolを開始せず、Gate P / DはNo-Goのままです。
+その後、山田さんが別のGate Xとして、Turnmark限定・retrospective・
+non-actionableな仮説生成sandboxだけを承認しました。
+
+正式sandbox結果:
+
+| 指標 | program single | program dutch | blend single / dutch |
+|---|---:|---:|---:|
+| 購入レース | 735 | 735 | 0 |
+| 点数 / 的中レース | 735 / 6 | 6,804 / 144 | 0 / 0 |
+| 回収率 | 0.3112 | 0.6081 | —（全PASS） |
+| 損益 | -506,300円 | -288,070円 | 0円 |
+| 最大連敗 | 109 | 22 | 0 |
+| 最大ドローダウン | 524,000円 | 307,920円 | 0円 |
+
+programのpooled log lossは2.6906、枠番頻度baselineは2.8001で、
+Gate Sは3 / 4 fold改善によりretrospective signal候補を通過しました。
+一方、市場暗黙確率は2.4999とさらに良く、inner validationは全foldで
+`λ=0`（市場100%）を選択しました。そのためblendは期待回収率1.10以上の
+候補を一つも出さず、全PASSでした。
+
+dutchは単点より下方リスクと払戻集中を改善しましたが、開催節bootstrapの
+回収率95%区間も0.4590〜0.7719で1を下回りました。収益候補ではありません。
+全L2 / λ試行、月別・開催節別結果、fingerprintは
+[`正式ledger`](experiments/turnmark_exacta_strategy_sandbox_v1.json)へ保存
+しています。future locked replication（Gate U）は未承認です。
 
 固定閾値1.00を後から調整せず、学習2026-05-01〜06-15、評価
 2026-06-16〜07-23で一度実行した最小バックテストは次の結果でした。
@@ -327,6 +382,8 @@ returnには少なくとも `P(win) × odds + P(refund) × refunded_stake` が�
 - [x] 回収率、的中率、購入数、最大連敗、最大ドローダウンを表示
 - [x] 最小評価期間で推定確率の較正、log loss、Brier scoreを確認
 - [x] 手数の少ない戦略が偶然に勝っただけでないか確認
+- [x] 2連単sandboxでnested選択、4 outer fold、開催節bootstrapを実施
+- [x] 同じ固定予算でsingle / dutchとprogram / market blendを比較
 - [ ] 設計固定後に新しく蓄積した将来期間で再確認
 
 ### M5 — モバイルフレンドリーなウェブUI

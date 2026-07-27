@@ -1,6 +1,6 @@
 # FunaYomi Project Plan
 
-Updated: 2026-07-26
+Updated: 2026-07-27
 
 ## 1. Purpose
 
@@ -369,15 +369,42 @@ Issue #1で固定した事項:
 - 仮説、特徴、fold、開催節bootstrap、停止条件を
   `protocols/ashiya_exacta_pl_v1.json`へ固定
 - Issue #1出力をresearch-only / non-actionable化し、最小CIとMIT LICENSEを追加
-- 2連単schema、数値依存、モデル、nested評価、future holdoutは未承認
+
+2026-07-27に承認・完了したTurnmark strategy sandbox:
+
+- 公式翌日番組LZHは、将来prospective program snapshotが必要になった場合の
+  候補としてHold。今回の必須次工程から外し、収集しない
+- Gate P / Dと確認的protocolを変更せず、Gate XとしてTurnmark限定・
+  retrospective・non-actionableな別protocolだけを承認
+- schema v3へ2連単30通り、2連単結果・払戻・適格性を追加
+- 標準ライブラリだけでprogram特徴Plackett–Luce、学習期間内前処理、
+  expanding inner L2選択、outer 4foldを実装
+- 正規化inverse odds市場確率、有限4候補の幾何blendを実装
+- 1レース1,000円、100円単位、理論回収率1.10以上、市場コスト0.50以下を
+  全4方式で固定し、single / equal-payout dutchを比較
+- 開催節共通resample、20,000 bootstrap、全試行ledgerを実装
+- probability Gate S:
+  programは頻度baselineより3 / 4 fold改善、pooled log loss差 -0.1095で
+  retrospective signal候補
+- market log loss 2.4999はprogram 2.6906より良く、全foldでblend `λ=0`
+  を選択。blend 2方式は735レース全てPASS
+- `program_single`は回収率0.3112、損益-506,300円、最大DD 524,000円
+- `program_dutch`は回収率0.6081、損益-288,070円、最大DD 307,920円。
+  singleより下方リスクを改善したが、bootstrap回収率95%上限0.7719で、
+  収益候補ではない
+- 正本:
+  `docs/TURNMARK_STRATEGY_SANDBOX.md`、
+  `experiments/turnmark_exacta_strategy_sandbox_v1.json`
 
 未解決で、暗黙に仮定してはいけない事項:
 
 1. Turnmarkオッズの厳密な観測時刻と購入可能時点
-2. 公式翌日番組LZHの利用・保存許可とfield対応
-3. prospective program snapshotの固定cutoffと開始可否
-4. 数値依存、2連単schema、モデル実装の開始可否
-5. E1の目標CI幅とfuture holdout開始日
+2. retrospective sandboxのGate Sは、historical Gate P No-Goの代わりに
+   ならない
+3. Gate Uのlocked future Turnmark replicationを開始するか。現時点は未承認
+4. 公式翌日番組LZHは将来候補のまま。利用・保存許可とfield対応を確認して
+   いない
+5. prospective program snapshotの固定cutoffと開始可否
 6. 採用可能な時点付きオッズ源、E2購入規則と終了条件
 7. UIへ進む最低性能・較正条件
 8. 不安定な推定を利益保証と誤解させない公開・deployment形態
