@@ -1,0 +1,284 @@
+{
+  "protocol_id": "ashiya_exacta_pl_v1",
+  "protocol_schema_version": 1,
+  "frozen_at": "2026-07-24",
+  "execution_status": "HOLD_GATE_P_NO_GO",
+  "authorization": {
+    "authorized_work_package": 0,
+    "data_audit": true,
+    "protocol_design": true,
+    "wager_schema_implementation": false,
+    "model_implementation": false,
+    "numeric_dependency_addition": false,
+    "development_evaluation_execution": false,
+    "future_holdout_start": false,
+    "odds_collection": false
+  },
+  "gates": {
+    "gate_a": "CONDITIONAL_GO_RETROSPECTIVE_EXACTA_CONTRACT",
+    "gate_p_historical": "NO_GO_HISTORICAL_CONFIRMATORY_USE",
+    "gate_p_prospective": "HOLD_PENDING_PERMISSION_AND_FIELD_AUDIT",
+    "gate_b": "NOT_STARTED",
+    "gate_d": "NO_GO_NO_ADOPTABLE_SOURCE",
+    "gate_e1": "NOT_STARTED",
+    "gate_e2": "BLOCKED_BY_GATE_D"
+  },
+  "hypothesis": {
+    "primary_bet_type": "exacta",
+    "statement": "A program-feature Plackett-Luce model has lower out-of-sample exacta log loss than a smoothed entry-order exacta frequency baseline.",
+    "win_role": "diagnostic_secondary_only",
+    "trifecta_role": "probability_consistency_secondary_only",
+    "switching_primary_after_results": false
+  },
+  "estimand": {
+    "name": "clean_race_conditional_exacta_probability",
+    "outcomes": 30,
+    "canonical_order": "permutations(entries_1_to_6,length_2)",
+    "odds_required": false,
+    "clean_race": {
+      "program_entries": [1, 2, 3, 4, 5, 6],
+      "known_exception_entries_allowed": false,
+      "unique_top_two_required": true,
+      "single_valid_exacta_payout_required": true,
+      "payout_must_match_result_top_two": true,
+      "places_three_to_six_may_tie": true
+    },
+    "refunds_and_economic_return_in_scope": false
+  },
+  "models": {
+    "primary": {
+      "family": "Plackett-Luce",
+      "score": "exp(x_i_beta)",
+      "linear_predictor_intercept": "none",
+      "objective": "mean_top_two_partial_negative_log_likelihood_plus_half_lambda_squared_l2_norm",
+      "objective_formula": "mean_race_nll + 0.5 * lambda * sum(beta_j^2)",
+      "penalized_coefficients": "all",
+      "numerical_score_stabilization": "subtract_max_linear_predictor_within_each_race_before_exp",
+      "post_hoc_calibration": "none"
+    },
+    "baseline": {
+      "family": "entry_order_exacta_frequency",
+      "smoothing": "symmetric_dirichlet",
+      "prior_count_per_combination": 1.0,
+      "training_data_only": true
+    },
+    "descriptive_references": [
+      "uniform_exacta_probability",
+      "timestamp_unknown_turnmark_market_probability"
+    ]
+  },
+  "features": {
+    "partition": "program_only",
+    "categorical": {
+      "entry_number": {
+        "values": [1, 2, 3, 4, 5, 6],
+        "encoding": "one_hot",
+        "reference": 6
+      },
+      "rank_number": {
+        "values": [1, 2, 3, 4, "unknown"],
+        "encoding": "one_hot",
+        "reference": 4
+      }
+    },
+    "numeric": [
+      "weight",
+      "flying_count",
+      "late_count",
+      "average_start_timing",
+      "national_win_rate",
+      "national_top_2_percent",
+      "national_top_3_percent",
+      "local_win_rate",
+      "local_top_2_percent",
+      "local_top_3_percent",
+      "motor_top_2_percent",
+      "motor_top_3_percent",
+      "boat_top_2_percent",
+      "boat_top_3_percent"
+    ],
+    "excluded": [
+      "racer_name",
+      "racer_number",
+      "age",
+      "branch_number",
+      "birthplace_number",
+      "motor_number",
+      "boat_number",
+      "preview",
+      "odds",
+      "result",
+      "payout",
+      "result_start_timing",
+      "technique",
+      "interactions"
+    ],
+    "field_eligibility": {
+      "asof_class_required": "prospective_preclose_verified",
+      "maximum_missing_fraction_in_any_development_month": 0.2,
+      "exclusion_timing": "before_any_outer_shadow_result_is_opened",
+      "protocol_change_required": true
+    }
+  },
+  "preprocessing": {
+    "fit_scope": "training_partition_only_for_each_fold",
+    "numeric_imputation": "median",
+    "numeric_missing_indicator": "one_per_numeric_feature",
+    "numeric_scaling": "mean_and_population_standard_deviation",
+    "zero_standard_deviation": "standardized_value_zero",
+    "clipping": "none",
+    "unknown_category": "explicit_unknown",
+    "interactions": []
+  },
+  "regularization_and_optimizer": {
+    "l2_candidates": [0.01, 0.1, 1.0, 10.0, 100.0],
+    "selection_metric": "pooled_inner_validation_mean_log_loss",
+    "tie_break": "largest_l2",
+    "tie_absolute_tolerance": 1e-12,
+    "optimizer_candidate": "scipy.optimize.minimize_L-BFGS-B",
+    "floating_point": "float64",
+    "initial_coefficients": "all_zero",
+    "gradient": "analytic",
+    "maximum_iterations": 1000,
+    "gradient_infinity_norm_tolerance": 1e-08,
+    "nonconvergence": "fail_closed",
+    "implementation_authorized": false
+  },
+  "development_folds": {
+    "data_class": "retrospective_development_not_future_holdout",
+    "source_period": {
+      "start": "2026-01-01",
+      "end": "2026-07-23"
+    },
+    "outer_shadow": [
+      {
+        "id": "outer_2026_04",
+        "refit_start": "2026-01-01",
+        "refit_end": "2026-03-31",
+        "evaluation_start": "2026-04-01",
+        "evaluation_end": "2026-04-30"
+      },
+      {
+        "id": "outer_2026_05",
+        "refit_start": "2026-01-01",
+        "refit_end": "2026-04-30",
+        "evaluation_start": "2026-05-01",
+        "evaluation_end": "2026-05-31"
+      },
+      {
+        "id": "outer_2026_06",
+        "refit_start": "2026-01-01",
+        "refit_end": "2026-05-31",
+        "evaluation_start": "2026-06-01",
+        "evaluation_end": "2026-06-30"
+      },
+      {
+        "id": "outer_2026_07_partial",
+        "refit_start": "2026-01-01",
+        "refit_end": "2026-06-30",
+        "evaluation_start": "2026-07-01",
+        "evaluation_end": "2026-07-23"
+      }
+    ],
+    "inner_selection": {
+      "validation_months": "all_complete_calendar_months_from_2026-03_through_the_month_before_each_outer_fold",
+      "training_for_each_validation_month": "expanding_from_2026-01-01_through_the_end_of_the_month_immediately_before_validation",
+      "pooling": "pool_all_inner_validation_races_for_each_l2_candidate",
+      "outer_results_used_for_selection": false
+    },
+    "minimum_execution_conditions": {
+      "eligible_races_per_outer_fold": 48,
+      "meeting_blocks_per_outer_fold": 2,
+      "pooled_eligible_races": 300,
+      "pooled_meeting_blocks": 10,
+      "failure_result": "INCONCLUSIVE_NO_MODEL_RESCUE"
+    }
+  },
+  "block_definition": {
+    "unit": "ashiya_meeting",
+    "source_fields": ["date", "title", "day_number"],
+    "new_block_when": [
+      "day_number_equals_1",
+      "title_changes",
+      "day_number_is_not_previous_day_number_plus_1",
+      "event_date_is_not_previous_event_date_plus_1_day"
+    ],
+    "race_outcome_used": false,
+    "left_or_right_censored_meeting": "retain_as_one_partial_block_and_label",
+    "ambiguous_boundary": "fail_closed"
+  },
+  "primary_analysis": {
+    "race_statistic": "negative_log_probability_true_exacta_PL_minus_negative_log_probability_true_exacta_baseline",
+    "pooled_statistic": "mean_race_statistic",
+    "bootstrap": {
+      "resampling_unit": "ashiya_meeting",
+      "stratify_by": "outer_shadow_fold",
+      "sampled_blocks_per_stratum": "same_as_observed_block_count_in_that_outer_fold",
+      "within_block": "retain_all_eligible_races",
+      "resamples": 20000,
+      "random_generator": "PCG64",
+      "seed": 20260724,
+      "interval": "two_sided_percentile_95_percent"
+    },
+    "gate_b_support_rule": "upper_confidence_limit_strictly_less_than_zero",
+    "functional_requirements": [
+      "deterministic_same_input_same_output",
+      "all_30_probabilities_finite_positive_and_sum_to_one_within_1e-12",
+      "training_dates_strictly_precede_prediction_date",
+      "no_preview_odds_or_outcome_feature_access",
+      "preprocessing_fitted_on_training_partition_only",
+      "nonconvergence_fails_closed"
+    ]
+  },
+  "secondary_analysis": {
+    "hard_pass_metrics": [],
+    "reported_metrics": [
+      "multiclass_brier_score_sum_over_30_outcomes",
+      "top_choice_hit_rate",
+      "calibration_curve",
+      "top_label_ece_10_equal_count_bins",
+      "race_statistic_by_outer_fold",
+      "missingness_by_feature_and_fold",
+      "optimizer_convergence_by_fold"
+    ],
+    "ece_for_gate_b": "ten_equal_count_bins_from_pooled_outer_shadow_predictions",
+    "ece_for_e1": "reuse_boundaries_frozen_from_gate_b",
+    "market_probability_role": "descriptive_only_due_unknown_timestamp"
+  },
+  "future_e1": {
+    "status": "NOT_AUTHORIZED",
+    "prerequisites": ["gate_a", "gate_p", "gate_b"],
+    "minimum_eligible_races": 300,
+    "minimum_calendar_months": 3,
+    "minimum_meeting_blocks": 12,
+    "maximum_calendar_months": 12,
+    "ci_width_target": "freeze_in_versioned_addendum_after_gate_b_before_e1",
+    "predictions_saved_before_results": true,
+    "append_only": true,
+    "change_to_model_features_coefficients_or_protocol": "terminate_trial_and_start_new_version",
+    "support_rule": "upper_confidence_limit_strictly_less_than_zero",
+    "insufficient_minimums_at_maximum_duration": "INCONCLUSIVE"
+  },
+  "economic_e2": {
+    "status": "BLOCKED_BY_GATE_D",
+    "estimand": "settlement_aware_return",
+    "purchase_rule": "not_selected",
+    "auto_betting": false
+  },
+  "provenance_requirements": [
+    "protocol_file_sha256",
+    "experiment_config_sha256",
+    "code_commit_sha",
+    "input_source_sha256_set",
+    "model_artifact_or_coefficient_sha256",
+    "prediction_timestamp",
+    "prediction_payload",
+    "selection_payload_if_gate_d_and_e2_are_later_authorized"
+  ],
+  "trial_discipline": {
+    "record_all_models_features_thresholds_and_failures": true,
+    "outer_shadow_result_driven_rescue": false,
+    "protocol_change": "new_protocol_id_and_hash",
+    "profitability_claim_authorized": false
+  }
+}

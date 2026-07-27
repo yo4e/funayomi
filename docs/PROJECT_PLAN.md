@@ -1,6 +1,6 @@
 # FunaYomi Project Plan
 
-Updated: 2026-07-24
+Updated: 2026-07-27
 
 ## 1. Purpose
 
@@ -54,9 +54,14 @@ expected_return = predicted_probability × odds
 - `1.10`：1円あたり1.10円の期待回収、期待利益率10%の推定
 - `0.80`：期待利益率-20%の推定
 
+現行値はclean cohort条件付き確率と時点不明の歴史オッズによるpoint
+estimateで、返還確率を含む厳密な実購入EVではありません。機械出力は
+`refund_probability_mode: "not_modeled"` と `actionable: false` を明記します。
+
 ### Value bet
 
-設定した期待回収率の閾値を超える買い目です。高配当という意味ではありません。
+設定した期待回収率の閾値を超える研究上の候補です。出力名は
+`RESEARCH_CANDIDATES` で、高配当や購入推奨という意味ではありません。
 
 ## 4. Data sources
 
@@ -66,12 +71,12 @@ Initial source of historical data.
 
 - Repository: `https://github.com/turnmark/api`
 - Endpoint: `https://turnmark.github.io/api/v1/YYYY/YYYYMMDD.json`
-- Available from: 2026-05-01
+- Available from: current README and observed files start at 2026-01-01
 - Data: programs, preview, odds, results
 - License: MIT
 - Status: unofficial, delayed, no accuracy/completeness guarantee
 
-The first audit must determine:
+The 2026-07-24 audit recorded the following in `docs/DATA_CONTRACT.md`:
 
 - オッズ値がどの取得時点を表すか
 - 同一日の途中更新履歴が残るか、最終スナップショットだけか
@@ -80,7 +85,10 @@ The first audit must determine:
 - 芦屋開催日の抽出方法
 - 払戻とオッズの整合性
 
-「前日オッズ」という会話上の呼称を、そのまま「レース前日の特定時点のオッズ」と解釈しないこと。データ監査で意味を確定します。
+1〜5月の一部は後日バックフィルです。オッズには観測時刻がなく、翌日に
+過去データとして取得されます。通常レースでは払戻と整合しますが、
+開始・前夜・締切・最終のいずれとも断定せず
+`historical_snapshot_time_unknown` とします。
 
 ### 4.2 Boatrace Open API
 
@@ -95,9 +103,9 @@ Potential future source for current-day program and preview data.
 
 Not required for the first historical backtest.
 
-## 5. Data contract to define in M1
+## 5. Data contract defined in M1
 
-A normalized race record should eventually distinguish at least the following.
+正本は `docs/DATA_CONTRACT.md` です。正規化レースは少なくとも次を分離します。
 
 ### Race identity
 
@@ -329,17 +337,74 @@ The exact framework is intentionally undecided until M1–M4 clarify the data vo
 - Data provider limitations and timestamps must remain visible.
 - No credentials, payment data, or betting account access should enter the repository.
 
-## 12. Open design questions
+## 12. Design decisions and remaining questions
 
-These are unresolved and must not be silently assumed.
+Issue #1で固定した事項:
 
-1. Is 3連単 definitely the first bet type, or should 2連単 be used as a lower-dimensional baseline first?
-2. What exact timestamp do Turnmark odds represent?
-3. Is the available history long enough for an Ashiya-only 120-way model?
-4. Should the first model use entry number or actual course number when preview data exists?
-5. What information is available at the intended real-world prediction cutoff?
-6. How should missing preview data be handled?
-7. How should races with fewer than six valid entries be treated?
-8. What minimum sample support is required before displaying a high expectation estimate?
-9. Should model fitting be cumulative or rolling-window?
-10. What deployment form best supports a low-cost public web app without exposing unstable predictions as guarantees?
+1. 初期賭式は3連単
+2. 芦屋1,284レース、clean cohort 1,183レースを確認し、平滑化120カテゴリ
+   基準モデルを実装
+3. 初期モデルはentry numberだけを使い、previewは観測時刻不明のため不使用
+4. 予測締切はprogram cutoff
+5. preview欠損はnullのまま保存し、resultから補完しない
+6. 6艇未満または120オッズ不完備は `SKIP_DATA`
+7. 支持数は各推定に表示し、α=1で平滑化
+8. 固定期間モデルを実装し、rollingは次段階
+9. 11候補から検証回収率で閾値8.00を選んだ3分割pseudo-holdoutは、
+   次期間で的中0・回収率0.0210となり、高配当1件への適合と判断
+
+次期方針と完了したWork package 0:
+
+- 山田さんがOption A、2連単primary、Work package 0、Issue #1 hardening、
+  MITを2026-07-24に承認
+- `docs/NEXT_PHASE_PROPOSAL.md` に、2連単を唯一のprimary confirmatory
+  bet typeとする監査先行方針を記録
+- `docs/SUBAGENT_DESIGN_REVIEW.md` のCodex内部レビューを草案へ反映済み
+- `docs/TSUKINO_DESIGN_REVIEW.md` の月野レビューを反映し、Issue #1研究コアは
+  条件付き承認、Option A / Work package 0は支持
+- 確率経路 `A + P → B → E1` と価格・収益経路 `D → E2`を分離
+- 2連単全期間監査はGate A conditional Go。2連単固有clean 1,184レース
+- program候補16特徴は完全だがas-of証跡がなく、historical Gate P No-Go
+- 採用可能なpre-close odds源がなくGate D No-Go
+- 仮説、特徴、fold、開催節bootstrap、停止条件を
+  `protocols/ashiya_exacta_pl_v1.json`へ固定
+- Issue #1出力をresearch-only / non-actionable化し、最小CIとMIT LICENSEを追加
+
+2026-07-27に承認・完了したTurnmark strategy sandbox:
+
+- 公式翌日番組LZHは、将来prospective program snapshotが必要になった場合の
+  候補としてHold。今回の必須次工程から外し、収集しない
+- Gate P / Dと確認的protocolを変更せず、Gate XとしてTurnmark限定・
+  retrospective・non-actionableな別protocolだけを承認
+- schema v3へ2連単30通り、2連単結果・払戻・適格性を追加
+- 標準ライブラリだけでprogram特徴Plackett–Luce、学習期間内前処理、
+  expanding inner L2選択、outer 4foldを実装
+- 正規化inverse odds市場確率、有限4候補の幾何blendを実装
+- 1レース1,000円、100円単位、理論回収率1.10以上、市場コスト0.50以下を
+  全4方式で固定し、single / equal-payout dutchを比較
+- 開催節共通resample、20,000 bootstrap、全試行ledgerを実装
+- probability Gate S:
+  programは頻度baselineより3 / 4 fold改善、pooled log loss差 -0.1095で
+  retrospective signal候補
+- market log loss 2.4999はprogram 2.6906より良く、全foldでblend `λ=0`
+  を選択。blend 2方式は735レース全てPASS
+- `program_single`は回収率0.3112、損益-506,300円、最大DD 524,000円
+- `program_dutch`は回収率0.6081、損益-288,070円、最大DD 307,920円。
+  singleより下方リスクを改善したが、bootstrap回収率95%上限0.7719で、
+  収益候補ではない
+- 正本:
+  `docs/TURNMARK_STRATEGY_SANDBOX.md`、
+  `experiments/turnmark_exacta_strategy_sandbox_v1.json`
+
+未解決で、暗黙に仮定してはいけない事項:
+
+1. Turnmarkオッズの厳密な観測時刻と購入可能時点
+2. retrospective sandboxのGate Sは、historical Gate P No-Goの代わりに
+   ならない
+3. Gate Uのlocked future Turnmark replicationを開始するか。現時点は未承認
+4. 公式翌日番組LZHは将来候補のまま。利用・保存許可とfield対応を確認して
+   いない
+5. prospective program snapshotの固定cutoffと開始可否
+6. 採用可能な時点付きオッズ源、E2購入規則と終了条件
+7. UIへ進む最低性能・較正条件
+8. 不安定な推定を利益保証と誤解させない公開・deployment形態

@@ -1,0 +1,1801 @@
+{
+  "actionable": false,
+  "configuration": {
+    "blend_candidates": [
+      0.0,
+      0.25,
+      0.5,
+      1.0
+    ],
+    "bootstrap_resamples": 20000,
+    "bootstrap_seed": 20260727,
+    "l2_candidates": [
+      0.01,
+      0.1,
+      1.0,
+      10.0,
+      100.0
+    ],
+    "maximum_market_cost": 0.5,
+    "minimum_predicted_return": 1.1,
+    "race_budget_yen": 1000,
+    "source_period": {
+      "end": "2026-07-23",
+      "start": "2026-01-01"
+    },
+    "strategies": [
+      "program_single",
+      "blend_single",
+      "program_dutch",
+      "blend_dutch"
+    ],
+    "wager_unit_yen": 100
+  },
+  "execution_date": "2026-07-27",
+  "folds": [
+    {
+      "fold_id": "outer_2026_04",
+      "models": {
+        "frequency": {
+          "model_fingerprint": "62a31ca14da2805419450fae70ed38fb9bf85e8fa19969c15934f82c5cf6c574",
+          "training_fingerprint": "94172c686e1f8d6a58b8d49252bccd8d25e6457509b29d2f6f977f88333ebaaa",
+          "training_races": 489
+        },
+        "program": {
+          "model_fingerprint": "3fb2e269538ce06b9bbbcac7c27daf333cfa6c51373ce9891e7c6e64cac3cccf",
+          "optimization": {
+            "converged": true,
+            "final_objective": 2.5426162655529145,
+            "gradient_infinity_norm": 5.588196634706728e-09,
+            "initial_objective": 3.40119738166214,
+            "iterations": 68
+          },
+          "training_fingerprint": "94172c686e1f8d6a58b8d49252bccd8d25e6457509b29d2f6f977f88333ebaaa",
+          "training_races": 489
+        }
+      },
+      "periods": {
+        "evaluation": {
+          "end": "2026-04-30",
+          "start": "2026-04-01"
+        },
+        "inner_validation_months": [
+          "2026-03"
+        ],
+        "training": {
+          "end": "2026-03-31",
+          "start": "2026-01-01"
+        }
+      },
+      "prediction_fingerprint": "476e514531536c5e6f46baed545609c9e9d87f9a2280005039871ce9c9bd8798",
+      "probability_quality": {
+        "blend": {
+          "brier_score": 0.8408990788365618,
+          "log_loss": 2.3332067765437445,
+          "races": 191
+        },
+        "blend_minus_market_log_loss": 0.0,
+        "clean_races": 192,
+        "frequency": {
+          "brier_score": 0.904415333882782,
+          "log_loss": 2.749816873898862,
+          "races": 192
+        },
+        "market": {
+          "brier_score": 0.8408990788365618,
+          "log_loss": 2.3332067765437445,
+          "races": 191
+        },
+        "market_complete_clean_races": 191,
+        "program": {
+          "brier_score": 0.8834728940904603,
+          "log_loss": 2.5909548793735007,
+          "races": 192
+        },
+        "program_minus_frequency_log_loss": -0.15886199452536204
+      },
+      "selection": {
+        "blend_candidates": [
+          {
+            "lambda": 0.0,
+            "mean_log_loss": 2.380378403679896
+          },
+          {
+            "lambda": 0.25,
+            "mean_log_loss": 2.3951765311610966
+          },
+          {
+            "lambda": 0.5,
+            "mean_log_loss": 2.4414057577819026
+          },
+          {
+            "lambda": 1.0,
+            "mean_log_loss": 2.617344936479646
+          }
+        ],
+        "blend_validation_races": 197,
+        "l2_candidates": [
+          {
+            "eligible": true,
+            "l2": 0.01,
+            "mean_log_loss": 2.617344936479646,
+            "months": [
+              {
+                "mean_log_loss": 2.617344936479646,
+                "month": "2026-03",
+                "races": 197,
+                "status": "success"
+              }
+            ],
+            "validation_races": 197
+          },
+          {
+            "eligible": true,
+            "l2": 0.1,
+            "mean_log_loss": 2.6846190882431165,
+            "months": [
+              {
+                "mean_log_loss": 2.6846190882431165,
+                "month": "2026-03",
+                "races": 197,
+                "status": "success"
+              }
+            ],
+            "validation_races": 197
+          },
+          {
+            "eligible": true,
+            "l2": 1.0,
+            "mean_log_loss": 2.962766025389561,
+            "months": [
+              {
+                "mean_log_loss": 2.962766025389561,
+                "month": "2026-03",
+                "races": 197,
+                "status": "success"
+              }
+            ],
+            "validation_races": 197
+          },
+          {
+            "eligible": true,
+            "l2": 10.0,
+            "mean_log_loss": 3.240546410960241,
+            "months": [
+              {
+                "mean_log_loss": 3.240546410960241,
+                "month": "2026-03",
+                "races": 197,
+                "status": "success"
+              }
+            ],
+            "validation_races": 197
+          },
+          {
+            "eligible": false,
+            "l2": 100.0,
+            "mean_log_loss": null,
+            "months": [
+              {
+                "mean_log_loss": null,
+                "month": "2026-03",
+                "races": 0,
+                "status": "nonconvergence"
+              }
+            ],
+            "validation_races": 0
+          }
+        ],
+        "selected_blend_lambda": 0.0,
+        "selected_l2": 0.01
+      }
+    },
+    {
+      "fold_id": "outer_2026_05",
+      "models": {
+        "frequency": {
+          "model_fingerprint": "79263ce3b7e07ab43245898e582d24c8568e23eb08c9281834cf51a8c992152b",
+          "training_fingerprint": "b164d98c006c9ac3d8aa5ae856f822abefde9dea82fd988f11d1497f7ea5ce17",
+          "training_races": 681
+        },
+        "program": {
+          "model_fingerprint": "fb3fde9ac84c5b71578c185b2234d63dd83f3cfcdfc496c7eb24895d7969adb7",
+          "optimization": {
+            "converged": true,
+            "final_objective": 2.5469785493449195,
+            "gradient_infinity_norm": 1.5274259708604465e-09,
+            "initial_objective": 3.401197381662151,
+            "iterations": 62
+          },
+          "training_fingerprint": "b164d98c006c9ac3d8aa5ae856f822abefde9dea82fd988f11d1497f7ea5ce17",
+          "training_races": 681
+        }
+      },
+      "periods": {
+        "evaluation": {
+          "end": "2026-05-31",
+          "start": "2026-05-01"
+        },
+        "inner_validation_months": [
+          "2026-03",
+          "2026-04"
+        ],
+        "training": {
+          "end": "2026-04-30",
+          "start": "2026-01-01"
+        }
+      },
+      "prediction_fingerprint": "f6ef5606bb21efbe92ce2d9db6ea8ad0a55c47aed9a9e501f4eacd804fcdb748",
+      "probability_quality": {
+        "blend": {
+          "brier_score": 0.8831304831275478,
+          "log_loss": 2.5825359087879964,
+          "races": 176
+        },
+        "blend_minus_market_log_loss": 0.0,
+        "clean_races": 177,
+        "frequency": {
+          "brier_score": 0.9039664700344893,
+          "log_loss": 2.7706643608992954,
+          "races": 177
+        },
+        "market": {
+          "brier_score": 0.8831304831275478,
+          "log_loss": 2.5825359087879964,
+          "races": 176
+        },
+        "market_complete_clean_races": 176,
+        "program": {
+          "brier_score": 0.9025871054950251,
+          "log_loss": 2.7788109798659715,
+          "races": 177
+        },
+        "program_minus_frequency_log_loss": 0.008146618966675836
+      },
+      "selection": {
+        "blend_candidates": [
+          {
+            "lambda": 0.0,
+            "mean_log_loss": 2.3571573191876154
+          },
+          {
+            "lambda": 0.25,
+            "mean_log_loss": 2.374193263694996
+          },
+          {
+            "lambda": 0.5,
+            "mean_log_loss": 2.422931038892393
+          },
+          {
+            "lambda": 1.0,
+            "mean_log_loss": 2.6080863433872032
+          }
+        ],
+        "blend_validation_races": 388,
+        "l2_candidates": [
+          {
+            "eligible": true,
+            "l2": 0.01,
+            "mean_log_loss": 2.6043195098359955,
+            "months": [
+              {
+                "mean_log_loss": 2.617344936479646,
+                "month": "2026-03",
+                "races": 197,
+                "status": "success"
+              },
+              {
+                "mean_log_loss": 2.5909548793735007,
+                "month": "2026-04",
+                "races": 192,
+                "status": "success"
+              }
+            ],
+            "validation_races": 389
+          },
+          {
+            "eligible": true,
+            "l2": 0.1,
+            "mean_log_loss": 2.661756340682745,
+            "months": [
+              {
+                "mean_log_loss": 2.6846190882431165,
+                "month": "2026-03",
+                "races": 197,
+                "status": "success"
+              },
+              {
+                "mean_log_loss": 2.6382982090713223,
+                "month": "2026-04",
+                "races": 192,
+                "status": "success"
+              }
+            ],
+            "validation_races": 389
+          },
+          {
+            "eligible": true,
+            "l2": 1.0,
+            "mean_log_loss": 2.9194381145016464,
+            "months": [
+              {
+                "mean_log_loss": 2.962766025389561,
+                "month": "2026-03",
+                "races": 197,
+                "status": "success"
+              },
+              {
+                "mean_log_loss": 2.8749818726010257,
+                "month": "2026-04",
+                "races": 192,
+                "status": "success"
+              }
+            ],
+            "validation_races": 389
+          },
+          {
+            "eligible": true,
+            "l2": 10.0,
+            "mean_log_loss": 3.2166976683997794,
+            "months": [
+              {
+                "mean_log_loss": 3.240546410960241,
+                "month": "2026-03",
+                "races": 197,
+                "status": "success"
+              },
+              {
+                "mean_log_loss": 3.192227864835138,
+                "month": "2026-04",
+                "races": 192,
+                "status": "success"
+              }
+            ],
+            "validation_races": 389
+          },
+          {
+            "eligible": false,
+            "l2": 100.0,
+            "mean_log_loss": null,
+            "months": [
+              {
+                "mean_log_loss": null,
+                "month": "2026-03",
+                "races": 0,
+                "status": "nonconvergence"
+              },
+              {
+                "mean_log_loss": 3.36699979419787,
+                "month": "2026-04",
+                "races": 192,
+                "status": "success"
+              }
+            ],
+            "validation_races": 192
+          }
+        ],
+        "selected_blend_lambda": 0.0,
+        "selected_l2": 0.01
+      }
+    },
+    {
+      "fold_id": "outer_2026_06",
+      "models": {
+        "frequency": {
+          "model_fingerprint": "d905dd5128994fbf1aa1fb59077b5344cfd494cd701897b914c1bca8f7b2d7c0",
+          "training_fingerprint": "8a0534cb90ad81fdbc541bb848f6fbaebcbe17bd484cce791d1fb57835cad92b",
+          "training_races": 858
+        },
+        "program": {
+          "model_fingerprint": "4b67488b2cb9642fdb6e0deaf548cbf89613fa5c4e3779296020cb033ae6a4e9",
+          "optimization": {
+            "converged": true,
+            "final_objective": 2.5963133123907842,
+            "gradient_infinity_norm": 6.6479769744720585e-09,
+            "initial_objective": 3.4011973816621848,
+            "iterations": 59
+          },
+          "training_fingerprint": "8a0534cb90ad81fdbc541bb848f6fbaebcbe17bd484cce791d1fb57835cad92b",
+          "training_races": 858
+        }
+      },
+      "periods": {
+        "evaluation": {
+          "end": "2026-06-30",
+          "start": "2026-06-01"
+        },
+        "inner_validation_months": [
+          "2026-03",
+          "2026-04",
+          "2026-05"
+        ],
+        "training": {
+          "end": "2026-05-31",
+          "start": "2026-01-01"
+        }
+      },
+      "prediction_fingerprint": "ef3dbd49be436d981d12c8060c2147119231f87bd9f7caa9c0c8deb78f24a902",
+      "probability_quality": {
+        "blend": {
+          "brier_score": 0.8629161189586131,
+          "log_loss": 2.419889506066376,
+          "races": 188
+        },
+        "blend_minus_market_log_loss": 0.0,
+        "clean_races": 190,
+        "frequency": {
+          "brier_score": 0.9029970493252855,
+          "log_loss": 2.730064028015706,
+          "races": 190
+        },
+        "market": {
+          "brier_score": 0.8629161189586131,
+          "log_loss": 2.419889506066376,
+          "races": 188
+        },
+        "market_complete_clean_races": 188,
+        "program": {
+          "brier_score": 0.8748602490709001,
+          "log_loss": 2.540456331973889,
+          "races": 190
+        },
+        "program_minus_frequency_log_loss": -0.18960769604181632
+      },
+      "selection": {
+        "blend_candidates": [
+          {
+            "lambda": 0.0,
+            "mean_log_loss": 2.427488226580642
+          },
+          {
+            "lambda": 0.25,
+            "mean_log_loss": 2.4434966647196408
+          },
+          {
+            "lambda": 0.5,
+            "mean_log_loss": 2.48868013655156
+          },
+          {
+            "lambda": 1.0,
+            "mean_log_loss": 2.661157027914676
+          }
+        ],
+        "blend_validation_races": 564,
+        "l2_candidates": [
+          {
+            "eligible": true,
+            "l2": 0.01,
+            "mean_log_loss": 2.6588866303224017,
+            "months": [
+              {
+                "mean_log_loss": 2.617344936479646,
+                "month": "2026-03",
+                "races": 197,
+                "status": "success"
+              },
+              {
+                "mean_log_loss": 2.5909548793735007,
+                "month": "2026-04",
+                "races": 192,
+                "status": "success"
+              },
+              {
+                "mean_log_loss": 2.7788109798659715,
+                "month": "2026-05",
+                "races": 177,
+                "status": "success"
+              }
+            ],
+            "validation_races": 566
+          },
+          {
+            "eligible": true,
+            "l2": 0.1,
+            "mean_log_loss": 2.714849842686872,
+            "months": [
+              {
+                "mean_log_loss": 2.6846190882431165,
+                "month": "2026-03",
+                "races": 197,
+                "status": "success"
+              },
+              {
+                "mean_log_loss": 2.6382982090713223,
+                "month": "2026-04",
+                "races": 192,
+                "status": "success"
+              },
+              {
+                "mean_log_loss": 2.831535561780687,
+                "month": "2026-05",
+                "races": 177,
+                "status": "success"
+              }
+            ],
+            "validation_races": 566
+          },
+          {
+            "eligible": true,
+            "l2": 1.0,
+            "mean_log_loss": 2.9649203321057205,
+            "months": [
+              {
+                "mean_log_loss": 2.962766025389561,
+                "month": "2026-03",
+                "races": 197,
+                "status": "success"
+              },
+              {
+                "mean_log_loss": 2.8749818726010257,
+                "month": "2026-04",
+                "races": 192,
+                "status": "success"
+              },
+              {
+                "mean_log_loss": 3.0648784261621325,
+                "month": "2026-05",
+                "races": 177,
+                "status": "success"
+              }
+            ],
+            "validation_races": 566
+          },
+          {
+            "eligible": false,
+            "l2": 10.0,
+            "mean_log_loss": null,
+            "months": [
+              {
+                "mean_log_loss": 3.240546410960241,
+                "month": "2026-03",
+                "races": 197,
+                "status": "success"
+              },
+              {
+                "mean_log_loss": 3.192227864835138,
+                "month": "2026-04",
+                "races": 192,
+                "status": "success"
+              },
+              {
+                "mean_log_loss": null,
+                "month": "2026-05",
+                "races": 0,
+                "status": "nonconvergence"
+              }
+            ],
+            "validation_races": 389
+          },
+          {
+            "eligible": false,
+            "l2": 100.0,
+            "mean_log_loss": null,
+            "months": [
+              {
+                "mean_log_loss": null,
+                "month": "2026-03",
+                "races": 0,
+                "status": "nonconvergence"
+              },
+              {
+                "mean_log_loss": 3.36699979419787,
+                "month": "2026-04",
+                "races": 192,
+                "status": "success"
+              },
+              {
+                "mean_log_loss": null,
+                "month": "2026-05",
+                "races": 0,
+                "status": "nonconvergence"
+              }
+            ],
+            "validation_races": 192
+          }
+        ],
+        "selected_blend_lambda": 0.0,
+        "selected_l2": 0.01
+      }
+    },
+    {
+      "fold_id": "outer_2026_07_partial",
+      "models": {
+        "frequency": {
+          "model_fingerprint": "f72a9d4dc62d7b00adf4af636f8899fb8862475b585482b7c0b2eaa3bcfb2b4c",
+          "training_fingerprint": "4702cc32c6f979e57757bbb356cde70370a32ea32c9b10e7087d1c5906058b67",
+          "training_races": 1048
+        },
+        "program": {
+          "model_fingerprint": "b2f95dd4f7b14b0614bce9d931b4c5f18a7d6ded72f3ea3282518cbb59ff1075",
+          "optimization": {
+            "converged": true,
+            "final_objective": 2.591535770988247,
+            "gradient_infinity_norm": 8.531492158786805e-09,
+            "initial_objective": 3.4011973816622083,
+            "iterations": 55
+          },
+          "training_fingerprint": "4702cc32c6f979e57757bbb356cde70370a32ea32c9b10e7087d1c5906058b67",
+          "training_races": 1048
+        }
+      },
+      "periods": {
+        "evaluation": {
+          "end": "2026-07-23",
+          "start": "2026-07-01"
+        },
+        "inner_validation_months": [
+          "2026-03",
+          "2026-04",
+          "2026-05",
+          "2026-06"
+        ],
+        "training": {
+          "end": "2026-06-30",
+          "start": "2026-01-01"
+        }
+      },
+      "prediction_fingerprint": "8a9f218f9644968dae09da212f83a891d8294a572618c70b320e69dc8e3b3c97",
+      "probability_quality": {
+        "blend": {
+          "brier_score": 0.8928595260481023,
+          "log_loss": 2.737672027938459,
+          "races": 136
+        },
+        "blend_minus_market_log_loss": 0.0,
+        "clean_races": 136,
+        "frequency": {
+          "brier_score": 0.9281972782366446,
+          "log_loss": 3.007377305245967,
+          "races": 136
+        },
+        "market": {
+          "brier_score": 0.8928595260481023,
+          "log_loss": 2.737672027938459,
+          "races": 136
+        },
+        "market_complete_clean_races": 136,
+        "program": {
+          "brier_score": 0.9019703090840878,
+          "log_loss": 2.9264260850389556,
+          "races": 136
+        },
+        "program_minus_frequency_log_loss": -0.08095122020701184
+      },
+      "selection": {
+        "blend_candidates": [
+          {
+            "lambda": 0.0,
+            "mean_log_loss": 2.4255885464520754
+          },
+          {
+            "lambda": 0.25,
+            "mean_log_loss": 2.4376418335464947
+          },
+          {
+            "lambda": 0.5,
+            "mean_log_loss": 2.4766372090592004
+          },
+          {
+            "lambda": 1.0,
+            "mean_log_loss": 2.631267494680883
+          }
+        ],
+        "blend_validation_races": 752,
+        "l2_candidates": [
+          {
+            "eligible": true,
+            "l2": 0.01,
+            "mean_log_loss": 2.6291224019014794,
+            "months": [
+              {
+                "mean_log_loss": 2.617344936479646,
+                "month": "2026-03",
+                "races": 197,
+                "status": "success"
+              },
+              {
+                "mean_log_loss": 2.5909548793735007,
+                "month": "2026-04",
+                "races": 192,
+                "status": "success"
+              },
+              {
+                "mean_log_loss": 2.7788109798659715,
+                "month": "2026-05",
+                "races": 177,
+                "status": "success"
+              },
+              {
+                "mean_log_loss": 2.540456331973889,
+                "month": "2026-06",
+                "races": 190,
+                "status": "success"
+              }
+            ],
+            "validation_races": 756
+          },
+          {
+            "eligible": true,
+            "l2": 0.1,
+            "mean_log_loss": 2.691686665106135,
+            "months": [
+              {
+                "mean_log_loss": 2.6846190882431165,
+                "month": "2026-03",
+                "races": 197,
+                "status": "success"
+              },
+              {
+                "mean_log_loss": 2.6382982090713223,
+                "month": "2026-04",
+                "races": 192,
+                "status": "success"
+              },
+              {
+                "mean_log_loss": 2.831535561780687,
+                "month": "2026-05",
+                "races": 177,
+                "status": "success"
+              },
+              {
+                "mean_log_loss": 2.622684778207729,
+                "month": "2026-06",
+                "races": 190,
+                "status": "success"
+              }
+            ],
+            "validation_races": 756
+          },
+          {
+            "eligible": true,
+            "l2": 1.0,
+            "mean_log_loss": 2.9460590753099036,
+            "months": [
+              {
+                "mean_log_loss": 2.962766025389561,
+                "month": "2026-03",
+                "races": 197,
+                "status": "success"
+              },
+              {
+                "mean_log_loss": 2.8749818726010257,
+                "month": "2026-04",
+                "races": 192,
+                "status": "success"
+              },
+              {
+                "mean_log_loss": 3.0648784261621325,
+                "month": "2026-05",
+                "races": 177,
+                "status": "success"
+              },
+              {
+                "mean_log_loss": 2.88987238401289,
+                "month": "2026-06",
+                "races": 190,
+                "status": "success"
+              }
+            ],
+            "validation_races": 756
+          },
+          {
+            "eligible": false,
+            "l2": 10.0,
+            "mean_log_loss": null,
+            "months": [
+              {
+                "mean_log_loss": 3.240546410960241,
+                "month": "2026-03",
+                "races": 197,
+                "status": "success"
+              },
+              {
+                "mean_log_loss": 3.192227864835138,
+                "month": "2026-04",
+                "races": 192,
+                "status": "success"
+              },
+              {
+                "mean_log_loss": null,
+                "month": "2026-05",
+                "races": 0,
+                "status": "nonconvergence"
+              },
+              {
+                "mean_log_loss": null,
+                "month": "2026-06",
+                "races": 0,
+                "status": "nonconvergence"
+              }
+            ],
+            "validation_races": 389
+          },
+          {
+            "eligible": false,
+            "l2": 100.0,
+            "mean_log_loss": null,
+            "months": [
+              {
+                "mean_log_loss": null,
+                "month": "2026-03",
+                "races": 0,
+                "status": "nonconvergence"
+              },
+              {
+                "mean_log_loss": 3.36699979419787,
+                "month": "2026-04",
+                "races": 192,
+                "status": "success"
+              },
+              {
+                "mean_log_loss": null,
+                "month": "2026-05",
+                "races": 0,
+                "status": "nonconvergence"
+              },
+              {
+                "mean_log_loss": 3.3692120824597667,
+                "month": "2026-06",
+                "races": 190,
+                "status": "success"
+              }
+            ],
+            "validation_races": 382
+          }
+        ],
+        "selected_blend_lambda": 0.0,
+        "selected_l2": 0.01
+      }
+    }
+  ],
+  "gates": {
+    "gate_d": "NO_GO_NO_ADOPTABLE_SOURCE",
+    "gate_p": "NO_GO_HISTORICAL_CONFIRMATORY_USE",
+    "gate_r": "DESCRIPTIVE_PARETO_ONLY",
+    "gate_s": {
+      "confirmatory_or_live_claim": false,
+      "fold_differences": [
+        -0.15886199452536204,
+        0.008146618966675836,
+        -0.18960769604181632,
+        -0.08095122020701184
+      ],
+      "improving_folds": 3,
+      "pooled_program_minus_frequency_log_loss": -0.10948831595376489,
+      "required_improving_folds": 3,
+      "status": "PASS_RETROSPECTIVE_SIGNAL_CANDIDATE"
+    },
+    "gate_u": "NOT_AUTHORIZED",
+    "gate_x": "PASS"
+  },
+  "portfolio": {
+    "actionable": false,
+    "comparisons": {
+      "blend": {
+        "dutch": "blend_dutch",
+        "dutch_not_worse_drawdown_and_streak": true,
+        "dutch_not_worse_return": false,
+        "observed_dutch_pareto_dominates": false,
+        "selection_authorized": false,
+        "single": "blend_single"
+      },
+      "program": {
+        "dutch": "program_dutch",
+        "dutch_not_worse_drawdown_and_streak": true,
+        "dutch_not_worse_return": true,
+        "observed_dutch_pareto_dominates": true,
+        "selection_authorized": false,
+        "single": "program_single"
+      }
+    },
+    "refund_probability_mode": "not_modeled",
+    "research_class": "retrospective_hypothesis_generation_sandbox",
+    "strategies": {
+      "blend_dutch": {
+        "bootstrap": {
+          "maximum_drawdown_yen_95_interval": [
+            null,
+            null
+          ],
+          "resamples": 20000,
+          "return_rate_95_interval": [
+            null,
+            null
+          ],
+          "seed": 20260727
+        },
+        "meetings": [
+          {
+            "bet_races": 0,
+            "hit_races": 0,
+            "key": "ashiya-2026-04-03-09",
+            "net_profit_yen": 0,
+            "payout_yen": 0,
+            "races": 60,
+            "return_rate": null,
+            "stake_yen": 0,
+            "tickets": 0
+          },
+          {
+            "bet_races": 0,
+            "hit_races": 0,
+            "key": "ashiya-2026-04-16-10",
+            "net_profit_yen": 0,
+            "payout_yen": 0,
+            "races": 72,
+            "return_rate": null,
+            "stake_yen": 0,
+            "tickets": 0
+          },
+          {
+            "bet_races": 0,
+            "hit_races": 0,
+            "key": "ashiya-2026-04-25-11",
+            "net_profit_yen": 0,
+            "payout_yen": 0,
+            "races": 72,
+            "return_rate": null,
+            "stake_yen": 0,
+            "tickets": 0
+          },
+          {
+            "bet_races": 0,
+            "hit_races": 0,
+            "key": "ashiya-2026-05-06-12",
+            "net_profit_yen": 0,
+            "payout_yen": 0,
+            "races": 60,
+            "return_rate": null,
+            "stake_yen": 0,
+            "tickets": 0
+          },
+          {
+            "bet_races": 0,
+            "hit_races": 0,
+            "key": "ashiya-2026-05-15-13",
+            "net_profit_yen": 0,
+            "payout_yen": 0,
+            "races": 72,
+            "return_rate": null,
+            "stake_yen": 0,
+            "tickets": 0
+          },
+          {
+            "bet_races": 0,
+            "hit_races": 0,
+            "key": "ashiya-2026-05-24-14",
+            "net_profit_yen": 0,
+            "payout_yen": 0,
+            "races": 60,
+            "return_rate": null,
+            "stake_yen": 0,
+            "tickets": 0
+          },
+          {
+            "bet_races": 0,
+            "hit_races": 0,
+            "key": "ashiya-2026-06-03-15",
+            "net_profit_yen": 0,
+            "payout_yen": 0,
+            "races": 72,
+            "return_rate": null,
+            "stake_yen": 0,
+            "tickets": 0
+          },
+          {
+            "bet_races": 0,
+            "hit_races": 0,
+            "key": "ashiya-2026-06-15-16",
+            "net_profit_yen": 0,
+            "payout_yen": 0,
+            "races": 72,
+            "return_rate": null,
+            "stake_yen": 0,
+            "tickets": 0
+          },
+          {
+            "bet_races": 0,
+            "hit_races": 0,
+            "key": "ashiya-2026-06-25-17",
+            "net_profit_yen": 0,
+            "payout_yen": 0,
+            "races": 60,
+            "return_rate": null,
+            "stake_yen": 0,
+            "tickets": 0
+          },
+          {
+            "bet_races": 0,
+            "hit_races": 0,
+            "key": "ashiya-2026-07-02-18",
+            "net_profit_yen": 0,
+            "payout_yen": 0,
+            "races": 60,
+            "return_rate": null,
+            "stake_yen": 0,
+            "tickets": 0
+          },
+          {
+            "bet_races": 0,
+            "hit_races": 0,
+            "key": "ashiya-2026-07-14-19",
+            "net_profit_yen": 0,
+            "payout_yen": 0,
+            "races": 72,
+            "return_rate": null,
+            "stake_yen": 0,
+            "tickets": 0
+          },
+          {
+            "bet_races": 0,
+            "hit_races": 0,
+            "key": "ashiya-2026-07-23-20",
+            "net_profit_yen": 0,
+            "payout_yen": 0,
+            "races": 12,
+            "return_rate": null,
+            "stake_yen": 0,
+            "tickets": 0
+          }
+        ],
+        "metrics": {
+          "bet_races": 0,
+          "evaluated_races": 744,
+          "hit_races": 0,
+          "largest_payout_share": null,
+          "largest_payout_yen": 0,
+          "maximum_drawdown_yen": 0,
+          "maximum_losing_streak": 0,
+          "net_profit_yen": 0,
+          "pass_races": 735,
+          "return_rate": null,
+          "return_without_largest_payout": null,
+          "skipped_races": 9,
+          "tickets": 0,
+          "total_payout_yen": 0,
+          "total_refund_yen": 0,
+          "total_stake_yen": 0,
+          "worst_meeting_profit_yen": 0
+        },
+        "monthly": [
+          {
+            "bet_races": 0,
+            "hit_races": 0,
+            "key": "2026-04",
+            "net_profit_yen": 0,
+            "payout_yen": 0,
+            "races": 204,
+            "return_rate": null,
+            "stake_yen": 0,
+            "tickets": 0
+          },
+          {
+            "bet_races": 0,
+            "hit_races": 0,
+            "key": "2026-05",
+            "net_profit_yen": 0,
+            "payout_yen": 0,
+            "races": 192,
+            "return_rate": null,
+            "stake_yen": 0,
+            "tickets": 0
+          },
+          {
+            "bet_races": 0,
+            "hit_races": 0,
+            "key": "2026-06",
+            "net_profit_yen": 0,
+            "payout_yen": 0,
+            "races": 204,
+            "return_rate": null,
+            "stake_yen": 0,
+            "tickets": 0
+          },
+          {
+            "bet_races": 0,
+            "hit_races": 0,
+            "key": "2026-07",
+            "net_profit_yen": 0,
+            "payout_yen": 0,
+            "races": 144,
+            "return_rate": null,
+            "stake_yen": 0,
+            "tickets": 0
+          }
+        ]
+      },
+      "blend_single": {
+        "bootstrap": {
+          "maximum_drawdown_yen_95_interval": [
+            null,
+            null
+          ],
+          "resamples": 20000,
+          "return_rate_95_interval": [
+            null,
+            null
+          ],
+          "seed": 20260727
+        },
+        "meetings": [
+          {
+            "bet_races": 0,
+            "hit_races": 0,
+            "key": "ashiya-2026-04-03-09",
+            "net_profit_yen": 0,
+            "payout_yen": 0,
+            "races": 60,
+            "return_rate": null,
+            "stake_yen": 0,
+            "tickets": 0
+          },
+          {
+            "bet_races": 0,
+            "hit_races": 0,
+            "key": "ashiya-2026-04-16-10",
+            "net_profit_yen": 0,
+            "payout_yen": 0,
+            "races": 72,
+            "return_rate": null,
+            "stake_yen": 0,
+            "tickets": 0
+          },
+          {
+            "bet_races": 0,
+            "hit_races": 0,
+            "key": "ashiya-2026-04-25-11",
+            "net_profit_yen": 0,
+            "payout_yen": 0,
+            "races": 72,
+            "return_rate": null,
+            "stake_yen": 0,
+            "tickets": 0
+          },
+          {
+            "bet_races": 0,
+            "hit_races": 0,
+            "key": "ashiya-2026-05-06-12",
+            "net_profit_yen": 0,
+            "payout_yen": 0,
+            "races": 60,
+            "return_rate": null,
+            "stake_yen": 0,
+            "tickets": 0
+          },
+          {
+            "bet_races": 0,
+            "hit_races": 0,
+            "key": "ashiya-2026-05-15-13",
+            "net_profit_yen": 0,
+            "payout_yen": 0,
+            "races": 72,
+            "return_rate": null,
+            "stake_yen": 0,
+            "tickets": 0
+          },
+          {
+            "bet_races": 0,
+            "hit_races": 0,
+            "key": "ashiya-2026-05-24-14",
+            "net_profit_yen": 0,
+            "payout_yen": 0,
+            "races": 60,
+            "return_rate": null,
+            "stake_yen": 0,
+            "tickets": 0
+          },
+          {
+            "bet_races": 0,
+            "hit_races": 0,
+            "key": "ashiya-2026-06-03-15",
+            "net_profit_yen": 0,
+            "payout_yen": 0,
+            "races": 72,
+            "return_rate": null,
+            "stake_yen": 0,
+            "tickets": 0
+          },
+          {
+            "bet_races": 0,
+            "hit_races": 0,
+            "key": "ashiya-2026-06-15-16",
+            "net_profit_yen": 0,
+            "payout_yen": 0,
+            "races": 72,
+            "return_rate": null,
+            "stake_yen": 0,
+            "tickets": 0
+          },
+          {
+            "bet_races": 0,
+            "hit_races": 0,
+            "key": "ashiya-2026-06-25-17",
+            "net_profit_yen": 0,
+            "payout_yen": 0,
+            "races": 60,
+            "return_rate": null,
+            "stake_yen": 0,
+            "tickets": 0
+          },
+          {
+            "bet_races": 0,
+            "hit_races": 0,
+            "key": "ashiya-2026-07-02-18",
+            "net_profit_yen": 0,
+            "payout_yen": 0,
+            "races": 60,
+            "return_rate": null,
+            "stake_yen": 0,
+            "tickets": 0
+          },
+          {
+            "bet_races": 0,
+            "hit_races": 0,
+            "key": "ashiya-2026-07-14-19",
+            "net_profit_yen": 0,
+            "payout_yen": 0,
+            "races": 72,
+            "return_rate": null,
+            "stake_yen": 0,
+            "tickets": 0
+          },
+          {
+            "bet_races": 0,
+            "hit_races": 0,
+            "key": "ashiya-2026-07-23-20",
+            "net_profit_yen": 0,
+            "payout_yen": 0,
+            "races": 12,
+            "return_rate": null,
+            "stake_yen": 0,
+            "tickets": 0
+          }
+        ],
+        "metrics": {
+          "bet_races": 0,
+          "evaluated_races": 744,
+          "hit_races": 0,
+          "largest_payout_share": null,
+          "largest_payout_yen": 0,
+          "maximum_drawdown_yen": 0,
+          "maximum_losing_streak": 0,
+          "net_profit_yen": 0,
+          "pass_races": 735,
+          "return_rate": null,
+          "return_without_largest_payout": null,
+          "skipped_races": 9,
+          "tickets": 0,
+          "total_payout_yen": 0,
+          "total_refund_yen": 0,
+          "total_stake_yen": 0,
+          "worst_meeting_profit_yen": 0
+        },
+        "monthly": [
+          {
+            "bet_races": 0,
+            "hit_races": 0,
+            "key": "2026-04",
+            "net_profit_yen": 0,
+            "payout_yen": 0,
+            "races": 204,
+            "return_rate": null,
+            "stake_yen": 0,
+            "tickets": 0
+          },
+          {
+            "bet_races": 0,
+            "hit_races": 0,
+            "key": "2026-05",
+            "net_profit_yen": 0,
+            "payout_yen": 0,
+            "races": 192,
+            "return_rate": null,
+            "stake_yen": 0,
+            "tickets": 0
+          },
+          {
+            "bet_races": 0,
+            "hit_races": 0,
+            "key": "2026-06",
+            "net_profit_yen": 0,
+            "payout_yen": 0,
+            "races": 204,
+            "return_rate": null,
+            "stake_yen": 0,
+            "tickets": 0
+          },
+          {
+            "bet_races": 0,
+            "hit_races": 0,
+            "key": "2026-07",
+            "net_profit_yen": 0,
+            "payout_yen": 0,
+            "races": 144,
+            "return_rate": null,
+            "stake_yen": 0,
+            "tickets": 0
+          }
+        ]
+      },
+      "program_dutch": {
+        "bootstrap": {
+          "maximum_drawdown_yen_95_interval": [
+            184459.0,
+            407060.74999999994
+          ],
+          "resamples": 20000,
+          "return_rate_95_interval": [
+            0.4590346953024051,
+            0.7719074981634618
+          ],
+          "seed": 20260727
+        },
+        "meetings": [
+          {
+            "bet_races": 59,
+            "hit_races": 18,
+            "key": "ashiya-2026-04-03-09",
+            "net_profit_yen": -9490,
+            "payout_yen": 49510,
+            "races": 60,
+            "return_rate": 0.8391525423728814,
+            "stake_yen": 59000,
+            "tickets": 527
+          },
+          {
+            "bet_races": 71,
+            "hit_races": 14,
+            "key": "ashiya-2026-04-16-10",
+            "net_profit_yen": -21310,
+            "payout_yen": 49690,
+            "races": 72,
+            "return_rate": 0.6998591549295775,
+            "stake_yen": 71000,
+            "tickets": 659
+          },
+          {
+            "bet_races": 72,
+            "hit_races": 15,
+            "key": "ashiya-2026-04-25-11",
+            "net_profit_yen": -32980,
+            "payout_yen": 39020,
+            "races": 72,
+            "return_rate": 0.5419444444444445,
+            "stake_yen": 72000,
+            "tickets": 652
+          },
+          {
+            "bet_races": 59,
+            "hit_races": 11,
+            "key": "ashiya-2026-05-06-12",
+            "net_profit_yen": -35990,
+            "payout_yen": 23010,
+            "races": 60,
+            "return_rate": 0.39,
+            "stake_yen": 59000,
+            "tickets": 542
+          },
+          {
+            "bet_races": 72,
+            "hit_races": 10,
+            "key": "ashiya-2026-05-15-13",
+            "net_profit_yen": -46130,
+            "payout_yen": 25870,
+            "races": 72,
+            "return_rate": 0.35930555555555554,
+            "stake_yen": 72000,
+            "tickets": 716
+          },
+          {
+            "bet_races": 59,
+            "hit_races": 13,
+            "key": "ashiya-2026-05-24-14",
+            "net_profit_yen": -3260,
+            "payout_yen": 55740,
+            "races": 60,
+            "return_rate": 0.9447457627118644,
+            "stake_yen": 59000,
+            "tickets": 554
+          },
+          {
+            "bet_races": 68,
+            "hit_races": 13,
+            "key": "ashiya-2026-06-03-15",
+            "net_profit_yen": -32990,
+            "payout_yen": 35010,
+            "races": 72,
+            "return_rate": 0.5148529411764706,
+            "stake_yen": 68000,
+            "tickets": 631
+          },
+          {
+            "bet_races": 71,
+            "hit_races": 14,
+            "key": "ashiya-2026-06-15-16",
+            "net_profit_yen": -28630,
+            "payout_yen": 42370,
+            "races": 72,
+            "return_rate": 0.5967605633802817,
+            "stake_yen": 71000,
+            "tickets": 661
+          },
+          {
+            "bet_races": 60,
+            "hit_races": 7,
+            "key": "ashiya-2026-06-25-17",
+            "net_profit_yen": -48320,
+            "payout_yen": 11680,
+            "races": 60,
+            "return_rate": 0.19466666666666665,
+            "stake_yen": 60000,
+            "tickets": 563
+          },
+          {
+            "bet_races": 60,
+            "hit_races": 9,
+            "key": "ashiya-2026-07-02-18",
+            "net_profit_yen": -31230,
+            "payout_yen": 28770,
+            "races": 60,
+            "return_rate": 0.4795,
+            "stake_yen": 60000,
+            "tickets": 537
+          },
+          {
+            "bet_races": 72,
+            "hit_races": 18,
+            "key": "ashiya-2026-07-14-19",
+            "net_profit_yen": 10720,
+            "payout_yen": 82720,
+            "races": 72,
+            "return_rate": 1.1488888888888888,
+            "stake_yen": 72000,
+            "tickets": 655
+          },
+          {
+            "bet_races": 12,
+            "hit_races": 2,
+            "key": "ashiya-2026-07-23-20",
+            "net_profit_yen": -8460,
+            "payout_yen": 3540,
+            "races": 12,
+            "return_rate": 0.295,
+            "stake_yen": 12000,
+            "tickets": 107
+          }
+        ],
+        "metrics": {
+          "bet_races": 735,
+          "evaluated_races": 744,
+          "hit_races": 144,
+          "largest_payout_share": 0.0485534647483946,
+          "largest_payout_yen": 21700,
+          "maximum_drawdown_yen": 307920,
+          "maximum_losing_streak": 22,
+          "net_profit_yen": -288070,
+          "pass_races": 0,
+          "return_rate": 0.6080680272108844,
+          "return_without_largest_payout": 0.5785442176870749,
+          "skipped_races": 9,
+          "tickets": 6804,
+          "total_payout_yen": 446930,
+          "total_refund_yen": 7600,
+          "total_stake_yen": 735000,
+          "worst_meeting_profit_yen": -48320
+        },
+        "monthly": [
+          {
+            "bet_races": 202,
+            "hit_races": 47,
+            "key": "2026-04",
+            "net_profit_yen": -63780,
+            "payout_yen": 138220,
+            "races": 204,
+            "return_rate": 0.6842574257425743,
+            "stake_yen": 202000,
+            "tickets": 1838
+          },
+          {
+            "bet_races": 190,
+            "hit_races": 34,
+            "key": "2026-05",
+            "net_profit_yen": -85380,
+            "payout_yen": 104620,
+            "races": 192,
+            "return_rate": 0.5506315789473685,
+            "stake_yen": 190000,
+            "tickets": 1812
+          },
+          {
+            "bet_races": 199,
+            "hit_races": 34,
+            "key": "2026-06",
+            "net_profit_yen": -109940,
+            "payout_yen": 89060,
+            "races": 204,
+            "return_rate": 0.44753768844221103,
+            "stake_yen": 199000,
+            "tickets": 1855
+          },
+          {
+            "bet_races": 144,
+            "hit_races": 29,
+            "key": "2026-07",
+            "net_profit_yen": -28970,
+            "payout_yen": 115030,
+            "races": 144,
+            "return_rate": 0.7988194444444444,
+            "stake_yen": 144000,
+            "tickets": 1299
+          }
+        ]
+      },
+      "program_single": {
+        "bootstrap": {
+          "maximum_drawdown_yen_95_interval": [
+            330900.0,
+            700507.4999999993
+          ],
+          "resamples": 20000,
+          "return_rate_95_interval": [
+            0.09126476009349,
+            0.5901288020830089
+          ],
+          "seed": 20260727
+        },
+        "meetings": [
+          {
+            "bet_races": 59,
+            "hit_races": 2,
+            "key": "ashiya-2026-04-03-09",
+            "net_profit_yen": -17300,
+            "payout_yen": 41700,
+            "races": 60,
+            "return_rate": 0.7067796610169491,
+            "stake_yen": 59000,
+            "tickets": 59
+          },
+          {
+            "bet_races": 71,
+            "hit_races": 0,
+            "key": "ashiya-2026-04-16-10",
+            "net_profit_yen": -69000,
+            "payout_yen": 2000,
+            "races": 72,
+            "return_rate": 0.028169014084507043,
+            "stake_yen": 71000,
+            "tickets": 71
+          },
+          {
+            "bet_races": 72,
+            "hit_races": 0,
+            "key": "ashiya-2026-04-25-11",
+            "net_profit_yen": -72000,
+            "payout_yen": 0,
+            "races": 72,
+            "return_rate": 0.0,
+            "stake_yen": 72000,
+            "tickets": 72
+          },
+          {
+            "bet_races": 59,
+            "hit_races": 1,
+            "key": "ashiya-2026-05-06-12",
+            "net_profit_yen": -28600,
+            "payout_yen": 30400,
+            "races": 60,
+            "return_rate": 0.5152542372881356,
+            "stake_yen": 59000,
+            "tickets": 59
+          },
+          {
+            "bet_races": 72,
+            "hit_races": 0,
+            "key": "ashiya-2026-05-15-13",
+            "net_profit_yen": -70000,
+            "payout_yen": 2000,
+            "races": 72,
+            "return_rate": 0.027777777777777776,
+            "stake_yen": 72000,
+            "tickets": 72
+          },
+          {
+            "bet_races": 59,
+            "hit_races": 0,
+            "key": "ashiya-2026-05-24-14",
+            "net_profit_yen": -58000,
+            "payout_yen": 1000,
+            "races": 60,
+            "return_rate": 0.01694915254237288,
+            "stake_yen": 59000,
+            "tickets": 59
+          },
+          {
+            "bet_races": 68,
+            "hit_races": 0,
+            "key": "ashiya-2026-06-03-15",
+            "net_profit_yen": -67000,
+            "payout_yen": 1000,
+            "races": 72,
+            "return_rate": 0.014705882352941176,
+            "stake_yen": 68000,
+            "tickets": 68
+          },
+          {
+            "bet_races": 71,
+            "hit_races": 1,
+            "key": "ashiya-2026-06-15-16",
+            "net_profit_yen": 25800,
+            "payout_yen": 96800,
+            "races": 72,
+            "return_rate": 1.3633802816901408,
+            "stake_yen": 71000,
+            "tickets": 71
+          },
+          {
+            "bet_races": 60,
+            "hit_races": 0,
+            "key": "ashiya-2026-06-25-17",
+            "net_profit_yen": -60000,
+            "payout_yen": 0,
+            "races": 60,
+            "return_rate": 0.0,
+            "stake_yen": 60000,
+            "tickets": 60
+          },
+          {
+            "bet_races": 60,
+            "hit_races": 1,
+            "key": "ashiya-2026-07-02-18",
+            "net_profit_yen": -21100,
+            "payout_yen": 38900,
+            "races": 60,
+            "return_rate": 0.6483333333333333,
+            "stake_yen": 60000,
+            "tickets": 60
+          },
+          {
+            "bet_races": 72,
+            "hit_races": 1,
+            "key": "ashiya-2026-07-14-19",
+            "net_profit_yen": -58100,
+            "payout_yen": 13900,
+            "races": 72,
+            "return_rate": 0.19305555555555556,
+            "stake_yen": 72000,
+            "tickets": 72
+          },
+          {
+            "bet_races": 12,
+            "hit_races": 0,
+            "key": "ashiya-2026-07-23-20",
+            "net_profit_yen": -11000,
+            "payout_yen": 1000,
+            "races": 12,
+            "return_rate": 0.08333333333333333,
+            "stake_yen": 12000,
+            "tickets": 12
+          }
+        ],
+        "metrics": {
+          "bet_races": 735,
+          "evaluated_races": 744,
+          "hit_races": 6,
+          "largest_payout_share": 0.42326191517271533,
+          "largest_payout_yen": 96800,
+          "maximum_drawdown_yen": 524000,
+          "maximum_losing_streak": 109,
+          "net_profit_yen": -506300,
+          "pass_races": 0,
+          "return_rate": 0.311156462585034,
+          "return_without_largest_payout": 0.17945578231292517,
+          "skipped_races": 9,
+          "tickets": 735,
+          "total_payout_yen": 228700,
+          "total_refund_yen": 9000,
+          "total_stake_yen": 735000,
+          "worst_meeting_profit_yen": -72000
+        },
+        "monthly": [
+          {
+            "bet_races": 202,
+            "hit_races": 2,
+            "key": "2026-04",
+            "net_profit_yen": -158300,
+            "payout_yen": 43700,
+            "races": 204,
+            "return_rate": 0.21633663366336633,
+            "stake_yen": 202000,
+            "tickets": 202
+          },
+          {
+            "bet_races": 190,
+            "hit_races": 1,
+            "key": "2026-05",
+            "net_profit_yen": -156600,
+            "payout_yen": 33400,
+            "races": 192,
+            "return_rate": 0.17578947368421052,
+            "stake_yen": 190000,
+            "tickets": 190
+          },
+          {
+            "bet_races": 199,
+            "hit_races": 1,
+            "key": "2026-06",
+            "net_profit_yen": -101200,
+            "payout_yen": 97800,
+            "races": 204,
+            "return_rate": 0.4914572864321608,
+            "stake_yen": 199000,
+            "tickets": 199
+          },
+          {
+            "bet_races": 144,
+            "hit_races": 2,
+            "key": "2026-07",
+            "net_profit_yen": -90200,
+            "payout_yen": 53800,
+            "races": 144,
+            "return_rate": 0.3736111111111111,
+            "stake_yen": 144000,
+            "tickets": 144
+          }
+        ]
+      }
+    },
+    "strategy_status": "historical_research_only",
+    "warnings": [
+      "Turnmarkのprogram snapshotと2連単oddsは観測時点を確認できません。",
+      "この結果はretrospectiveな仮説生成だけに使い、実購入可能性、確認的性能、将来収益を示しません。",
+      "返還確率はモデル化せず、portfolio固定後に観測結果から実現返還だけを精算します。"
+    ]
+  },
+  "probability_quality": {
+    "blend": {
+      "brier_score": 0.8678723806005687,
+      "log_loss": 2.4999007774336492,
+      "races": 691
+    },
+    "blend_minus_market_log_loss": 0.0,
+    "clean_races": 695,
+    "frequency": {
+      "brier_score": 0.9085670194440095,
+      "log_loss": 2.80012648993409,
+      "races": 695
+    },
+    "market": {
+      "brier_score": 0.8678723806005687,
+      "log_loss": 2.4999007774336492,
+      "races": 691
+    },
+    "market_complete_clean_races": 691,
+    "program": {
+      "brier_score": 0.8896059319379782,
+      "log_loss": 2.690638173980325,
+      "races": 695
+    },
+    "program_minus_frequency_log_loss": -0.10948831595376489
+  },
+  "provenance": {
+    "code_commit_sha": "40b3d860efedd79b6b51cd1cecde2eae80eddd47",
+    "configuration_sha256": "a3c94ef9f1e92603963c1f9073dd0325b30107f8f679d16a23ef7752b1c996dc",
+    "execution_workers": 4,
+    "input_source_fingerprint": "0d78468991840f75ec87e32ff57954271e1150df18089288ee7f4a864056037b",
+    "prediction_fingerprint": "5ed2f468836a6e43d5093fa70334dd8a93c5ebe9eb34c46b606094f783eb5317",
+    "protocol_path": "protocols/turnmark_exacta_strategy_sandbox_v1.json",
+    "protocol_sha256": "f4954e9d31f81b7b1b15a2a4a35037b07ee88d3cf32530e9532c72fdcd74f205",
+    "validation_cache_key": "9de8fdfbc44c38de14aebd0e1e989a98d974a981b0232e9fcf77f492a45e211e",
+    "validation_cache_reused": false
+  },
+  "refund_probability_mode": "not_modeled",
+  "research_class": "retrospective_hypothesis_generation_sandbox",
+  "strategy_status": "historical_research_only",
+  "study_id": "turnmark_exacta_strategy_sandbox_v1",
+  "warnings": [
+    "Turnmark programとoddsのsnapshot時点は未確認です。",
+    "本結果はretrospective hypothesis generationであり、実購入可能性、確認的性能、将来収益を示しません。",
+    "outer結果を見た後に同じprotocol idの候補・閾値・規則を変更しません。",
+    "公式翌日番組LZHは将来prospective候補としてHoldし、収集していません。"
+  ]
+}

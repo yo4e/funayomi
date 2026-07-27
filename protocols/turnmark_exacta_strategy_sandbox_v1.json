@@ -1,0 +1,270 @@
+{
+  "protocol_id": "turnmark_exacta_strategy_sandbox_v1",
+  "protocol_schema_version": 1,
+  "frozen_at": "2026-07-27",
+  "execution_status": "AUTHORIZED_RETROSPECTIVE_DEVELOPMENT",
+  "owner_decision": {
+    "authorized_at": "2026-07-27",
+    "scope": "Turnmark限定・retrospective・non-actionable",
+    "official_next_day_program_lzh": "HOLD_AS_POSSIBLE_FUTURE_PROSPECTIVE_SOURCE"
+  },
+  "authorization": {
+    "exacta_schema_implementation": true,
+    "program_model_implementation": true,
+    "market_blend_implementation": true,
+    "fixed_budget_portfolio_backtest": true,
+    "retrospective_development_execution": true,
+    "future_locked_replication_start": false,
+    "prospective_program_collection": false,
+    "odds_collection": false,
+    "current_day_prediction": false,
+    "user_interface": false,
+    "automated_betting": false
+  },
+  "research_class": {
+    "name": "retrospective_hypothesis_generation_sandbox",
+    "actionable": false,
+    "program_availability": "semantic_pre_race_but_snapshot_post_race_unverified",
+    "odds_availability": "historical_snapshot_time_unknown",
+    "confirmatory_or_live_performance_claim": false,
+    "purchasable_price_claim": false,
+    "profitability_claim": false
+  },
+  "gates": {
+    "gate_x_owner_authorization": "PASS",
+    "gate_a_exacta_contract": "CONDITIONAL_GO_RETROSPECTIVE_EXACTA_CONTRACT",
+    "gate_s_probability_signal": "NOT_RUN",
+    "gate_r_risk_robustness": "NOT_RUN",
+    "gate_u_locked_turnmark_replication": "NOT_AUTHORIZED",
+    "gate_p_historical": "NO_GO_HISTORICAL_CONFIRMATORY_USE",
+    "gate_p_prospective": "HOLD_LZH_NOT_ABANDONED",
+    "gate_d": "NO_GO_NO_ADOPTABLE_SOURCE"
+  },
+  "questions": [
+    "Does a program-feature Plackett-Luce model improve retrospective exacta log loss over a smoothed entry-order frequency baseline?",
+    "Does anchoring the model to normalized market probability improve retrospective exacta log loss?",
+    "At the same fixed race budget, does a coverage-cost dutching portfolio reduce downside relative to a single-ticket rule without hiding turnover or return?"
+  ],
+  "estimand": {
+    "bet_type": "exacta",
+    "outcomes": 30,
+    "canonical_order": "permutations(entries_1_to_6,length_2)",
+    "clean_probability_cohort": {
+      "program_entries": [1, 2, 3, 4, 5, 6],
+      "known_exception_entries_allowed": false,
+      "unique_top_two_required": true,
+      "single_valid_exacta_payout_required": true,
+      "payout_must_match_result_top_two": true,
+      "places_three_to_six_may_tie": true
+    },
+    "portfolio_selection_inputs": [
+      "program",
+      "timestamp_unknown_turnmark_exacta_odds"
+    ],
+    "selection_must_precede_outcome_access": true
+  },
+  "probability_models": {
+    "frequency_baseline": {
+      "family": "entry_order_exacta_frequency",
+      "smoothing": "symmetric_dirichlet",
+      "prior_count_per_combination": 1.0
+    },
+    "program_model": {
+      "family": "Plackett-Luce",
+      "score": "exp(x_i_beta)",
+      "top_two_probability": "score_a/sum_scores * score_b/(sum_scores-score_a)",
+      "objective": "mean_top_two_partial_negative_log_likelihood_plus_half_lambda_l2_norm",
+      "l2_candidates": [0.01, 0.1, 1.0, 10.0, 100.0],
+      "selection_metric": "pooled_inner_validation_mean_log_loss",
+      "tie_break": "largest_l2",
+      "tie_absolute_tolerance": 1e-12,
+      "optimizer": "deterministic_standard_library",
+      "nonconvergence": "fail_closed"
+    },
+    "market": {
+      "formula": "q_i=(1/odds_i)/sum_j(1/odds_j)",
+      "role": "timestamp_unknown_market_anchor_not_independent_predictor"
+    },
+    "blend": {
+      "formula": "p_lambda_i proportional_to q_i^(1-lambda)*p_program_i^lambda",
+      "lambda_candidates": [0.0, 0.25, 0.5, 1.0],
+      "selection_metric": "pooled_inner_validation_mean_log_loss",
+      "tie_break": "smallest_lambda",
+      "tie_absolute_tolerance": 1e-12
+    }
+  },
+  "features": {
+    "partition": "program_only",
+    "categorical": {
+      "entry_number": {
+        "values": [1, 2, 3, 4, 5, 6],
+        "reference": 6
+      },
+      "rank_number": {
+        "values": [1, 2, 3, 4, "unknown"],
+        "reference": 4
+      }
+    },
+    "numeric": [
+      "weight",
+      "flying_count",
+      "late_count",
+      "average_start_timing",
+      "national_win_rate",
+      "national_top_2_percent",
+      "national_top_3_percent",
+      "local_win_rate",
+      "local_top_2_percent",
+      "local_top_3_percent",
+      "motor_top_2_percent",
+      "motor_top_3_percent",
+      "boat_top_2_percent",
+      "boat_top_3_percent"
+    ],
+    "excluded": [
+      "preview",
+      "odds_as_program_model_feature",
+      "result",
+      "payout",
+      "result_start_timing",
+      "technique",
+      "racer_name",
+      "racer_number",
+      "motor_number",
+      "boat_number"
+    ],
+    "sandbox_exception": "as-of未確認のため確認的評価には使わず、retrospective hypothesis generationだけに使う"
+  },
+  "preprocessing": {
+    "fit_scope": "training_partition_only",
+    "numeric_imputation": "median",
+    "numeric_missing_indicator": "one_per_numeric_feature",
+    "numeric_scaling": "mean_and_population_standard_deviation",
+    "zero_standard_deviation": "standardized_value_zero",
+    "unknown_category": "explicit_unknown",
+    "interactions": []
+  },
+  "development_folds": {
+    "source_period": {
+      "start": "2026-01-01",
+      "end": "2026-07-23"
+    },
+    "outer": [
+      {
+        "id": "outer_2026_04",
+        "refit_start": "2026-01-01",
+        "refit_end": "2026-03-31",
+        "evaluation_start": "2026-04-01",
+        "evaluation_end": "2026-04-30"
+      },
+      {
+        "id": "outer_2026_05",
+        "refit_start": "2026-01-01",
+        "refit_end": "2026-04-30",
+        "evaluation_start": "2026-05-01",
+        "evaluation_end": "2026-05-31"
+      },
+      {
+        "id": "outer_2026_06",
+        "refit_start": "2026-01-01",
+        "refit_end": "2026-05-31",
+        "evaluation_start": "2026-06-01",
+        "evaluation_end": "2026-06-30"
+      },
+      {
+        "id": "outer_2026_07_partial",
+        "refit_start": "2026-01-01",
+        "refit_end": "2026-06-30",
+        "evaluation_start": "2026-07-01",
+        "evaluation_end": "2026-07-23"
+      }
+    ],
+    "inner_validation_months": "complete months from 2026-03 through the month before each outer evaluation",
+    "inner_training": "expanding from 2026-01-01 through the day before each validation month",
+    "outer_results_used_for_selection": false
+  },
+  "portfolio_rules": {
+    "race_budget_yen": 1000,
+    "wager_unit_yen": 100,
+    "minimum_predicted_return": 1.1,
+    "maximum_market_cost": 0.5,
+    "market_cost_formula": "sum_i_in_S(1/odds_i)",
+    "coverage_formula": "sum_i_in_S(probability_i)",
+    "predicted_dutch_return_formula": "coverage/market_cost",
+    "candidate_subsets": "value_density_descending_prefixes_only",
+    "value_density": "probability_i*odds_i",
+    "prefix_selection": "maximum_coverage_then_lower_market_cost_then_canonical_order",
+    "dutch_stakes": "race_budget*(1/odds_i)/market_cost rounded_down_to_wager_units with deterministic remainder allocation",
+    "incomplete_market": "SKIP_DATA",
+    "no_qualifying_candidate": "PASS",
+    "refund_probability": "not_modeled",
+    "actual_refunds": "settle_from_result_after_selection"
+  },
+  "strategy_comparisons": [
+    "program_single",
+    "blend_single",
+    "program_dutch",
+    "blend_dutch"
+  ],
+  "evaluation": {
+    "same_fixed_race_budget_for_all_strategies": true,
+    "selection_before_outcome": true,
+    "required_metrics": [
+      "eligible_races",
+      "skipped_races",
+      "pass_races",
+      "bet_races",
+      "tickets",
+      "hit_races",
+      "total_stake",
+      "total_payout",
+      "return_rate",
+      "net_profit",
+      "maximum_losing_streak",
+      "maximum_drawdown",
+      "worst_meeting_profit",
+      "largest_payout_share_of_total_payout",
+      "return_without_largest_payout",
+      "monthly_results",
+      "meeting_results"
+    ],
+    "probability_metrics": [
+      "exacta_log_loss",
+      "exacta_brier_score",
+      "fold_direction"
+    ],
+    "bootstrap": {
+      "unit": "ashiya_meeting",
+      "resamples": 20000,
+      "seed": 20260727,
+      "reported": [
+        "return_rate_percentile_95_interval",
+        "maximum_drawdown_percentile_95_interval"
+      ]
+    }
+  },
+  "decision_rules": {
+    "gate_s_probability_signal": "program log loss improves frequency baseline in at least 3 of 4 outer folds and pooled mean difference is below zero",
+    "gate_r_risk_robustness": "report Pareto relation of return, drawdown, losing streak, turnover and concentration; no single scalar winner",
+    "gate_u_locked_replication": "freeze at most one rule before observing newly accumulated Turnmark dates"
+  },
+  "trial_discipline": {
+    "publish_all_four_strategies": true,
+    "record_all_l2_and_blend_candidates": true,
+    "change_after_outer_results": "new_protocol_id_and_hash",
+    "result_driven_rescue": false,
+    "locked_replication_authorized": false
+  },
+  "prohibited_claims_and_actions": [
+    "preclose_or_closing_odds_claim",
+    "leakage_free_confirmatory_backtest_claim",
+    "live_or_purchasable_return_claim",
+    "profit_guarantee",
+    "official_site_scraping",
+    "lzh_collection",
+    "current_day_prediction",
+    "user_interface",
+    "automated_betting",
+    "account_or_fund_operation"
+  ]
+}
