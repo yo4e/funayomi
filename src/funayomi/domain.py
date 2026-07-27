@@ -40,6 +40,7 @@ class PreviewSnapshot:
 @dataclass(frozen=True)
 class OddsSnapshot:
     trifecta: Mapping[str, Optional[float]]
+    exacta: Mapping[str, Optional[float]] = field(default_factory=dict)
     observed_at: Optional[str] = None
     availability: str = "historical_snapshot_time_unknown"
 
@@ -50,6 +51,9 @@ class RaceOutcome:
     winning_trifectas: Tuple[str, ...]
     trifecta_payouts: Mapping[str, int]
     racers: Mapping[int, Mapping[str, Any]]
+    exacta_status: str = "missing"
+    winning_exactas: Tuple[str, ...] = field(default_factory=tuple)
+    exacta_payouts: Mapping[str, int] = field(default_factory=dict)
     availability: str = "post_race"
 
     @property
@@ -66,6 +70,19 @@ class RaceOutcome:
         )
 
     @property
+    def is_exacta_standard(self) -> bool:
+        return self.exacta_status == "standard"
+
+    @property
+    def is_exacta_settleable(self) -> bool:
+        winner = self.winning_exacta
+        return (
+            self.exacta_status in ("standard", "exception_settled")
+            and winner is not None
+            and winner in self.exacta_payouts
+        )
+
+    @property
     def nonstarter_entries(self) -> Tuple[int, ...]:
         return tuple(
             sorted(
@@ -79,6 +96,12 @@ class RaceOutcome:
     def winning_trifecta(self) -> Optional[str]:
         if len(self.winning_trifectas) == 1:
             return self.winning_trifectas[0]
+        return None
+
+    @property
+    def winning_exacta(self) -> Optional[str]:
+        if len(self.winning_exactas) == 1:
+            return self.winning_exactas[0]
         return None
 
 
@@ -101,9 +124,32 @@ class NormalizedRace:
         return self.has_full_field and self.outcome.is_standard
 
     @property
+    def exacta_training_eligible(self) -> bool:
+        """既知例外がなく、一意な上位2艇と払戻が一致する確率学習対象。"""
+
+        return self.has_full_field and self.outcome.is_exacta_standard
+
+    @property
+    def exacta_probability_training_eligible(self) -> bool:
+        """監査用語との互換alias。"""
+
+        return self.exacta_training_eligible
+
+    @property
     def evaluation_eligible(self) -> bool:
         # 評価対象の選択可否を事後結果で決めない。オッズ完全性はランキング側で判定する。
         return self.has_full_field
+
+    @property
+    def exacta_evaluation_eligible(self) -> bool:
+        # 2連単でも選択可否を事後結果で決めない。
+        return self.has_full_field
+
+    @property
+    def exacta_settlement_eligible(self) -> bool:
+        """結果を開いた後に2連単を一意に精算できるか。"""
+
+        return self.outcome.is_exacta_settleable
 
 
 JsonDict = Dict[str, Any]

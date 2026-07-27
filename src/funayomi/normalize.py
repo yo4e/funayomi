@@ -4,7 +4,14 @@ import math
 from datetime import date
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
 
-from .combinations import TRIFECTA_COMBINATIONS, combination_key, parse_combination
+from .combinations import (
+    EXACTA_COMBINATIONS,
+    TRIFECTA_COMBINATIONS,
+    combination_key,
+    exacta_combination_key,
+    parse_combination,
+    parse_exacta_combination,
+)
 from .domain import (
     NormalizedRace,
     OddsSnapshot,
@@ -16,7 +23,7 @@ from .domain import (
 from .errors import DataContractError
 
 
-SCHEMA_VERSION = 2
+SCHEMA_VERSION = 3
 ASHIYA_STADIUM_NUMBER = 21
 
 PROGRAM_RACE_FIELDS: Tuple[str, ...] = (
@@ -205,9 +212,9 @@ def _normalize_odds(value: Any) -> Tuple[OddsSnapshot, List[str]]:
     issues: List[str] = []
     odds_mapping = _mapping(value)
     trifecta = _mapping(odds_mapping.get("trifecta"))
-    normalized: Dict[str, Optional[float]] = {}
-    invalid_count = 0
-    unavailable_zero_count = 0
+    normalized_trifecta: Dict[str, Optional[float]] = {}
+    trifecta_invalid_count = 0
+    trifecta_unavailable_zero_count = 0
     for key in TRIFECTA_COMBINATIONS:
         first, second, third = parse_combination(key)
         raw_value = (
@@ -219,22 +226,67 @@ def _normalize_odds(value: Any) -> Tuple[OddsSnapshot, List[str]]:
             and not isinstance(raw_value, bool)
             and raw_value == 0
         ):
-            unavailable_zero_count += 1
+            trifecta_unavailable_zero_count += 1
         elif raw_value is not None and odd is None:
-            invalid_count += 1
-        normalized[key] = odd
-    missing_count = sum(value is None for value in normalized.values())
+            trifecta_invalid_count += 1
+        normalized_trifecta[key] = odd
+    trifecta_missing_count = sum(
+        item is None for item in normalized_trifecta.values()
+    )
     if not trifecta:
         issues.append("trifecta_odds_missing")
-    if missing_count:
-        issues.append(f"trifecta_odds_unavailable_combinations:{missing_count}")
-    if unavailable_zero_count:
+    if trifecta_missing_count:
         issues.append(
-            f"trifecta_odds_unavailable_zero:{unavailable_zero_count}"
+            f"trifecta_odds_unavailable_combinations:{trifecta_missing_count}"
         )
-    if invalid_count:
-        issues.append(f"trifecta_odds_invalid_combinations:{invalid_count}")
-    return OddsSnapshot(trifecta=normalized), issues
+    if trifecta_unavailable_zero_count:
+        issues.append(
+            "trifecta_odds_unavailable_zero:"
+            f"{trifecta_unavailable_zero_count}"
+        )
+    if trifecta_invalid_count:
+        issues.append(
+            f"trifecta_odds_invalid_combinations:{trifecta_invalid_count}"
+        )
+
+    exacta = _mapping(odds_mapping.get("exacta"))
+    normalized_exacta: Dict[str, Optional[float]] = {}
+    exacta_invalid_count = 0
+    exacta_unavailable_zero_count = 0
+    for key in EXACTA_COMBINATIONS:
+        first, second = parse_exacta_combination(key)
+        raw_value = _mapping(exacta.get(str(first))).get(str(second))
+        odd = _positive_float(raw_value)
+        if (
+            isinstance(raw_value, (int, float))
+            and not isinstance(raw_value, bool)
+            and raw_value == 0
+        ):
+            exacta_unavailable_zero_count += 1
+        elif raw_value is not None and odd is None:
+            exacta_invalid_count += 1
+        normalized_exacta[key] = odd
+    exacta_missing_count = sum(
+        item is None for item in normalized_exacta.values()
+    )
+    if not exacta:
+        issues.append("exacta_odds_missing")
+    if exacta_missing_count:
+        issues.append(
+            f"exacta_odds_unavailable_combinations:{exacta_missing_count}"
+        )
+    if exacta_unavailable_zero_count:
+        issues.append(
+            f"exacta_odds_unavailable_zero:{exacta_unavailable_zero_count}"
+        )
+    if exacta_invalid_count:
+        issues.append(
+            f"exacta_odds_invalid_combinations:{exacta_invalid_count}"
+        )
+    return OddsSnapshot(
+        trifecta=normalized_trifecta,
+        exacta=normalized_exacta,
+    ), issues
 
 
 def _normalize_outcome(
@@ -292,6 +344,42 @@ def _normalize_outcome(
             invalid_payout_items += 1
             continue
         payouts[combination] = amount
+
+    raw_exacta_payouts = payouts_container.get("exacta")
+    exacta_payout_array_valid = isinstance(raw_exacta_payouts, list)
+    if "exacta" not in payouts_container:
+        issues.append("result_exacta_payout_missing")
+    elif not exacta_payout_array_valid:
+        issues.append("result_exacta_payout_not_array")
+    exacta_payout_items: Sequence[Any] = (
+        raw_exacta_payouts if exacta_payout_array_valid else ()
+    )
+    exacta_payouts: Dict[str, int] = {}
+    invalid_exacta_payout_items = 0
+    for item in exacta_payout_items:
+        if not isinstance(item, Mapping):
+            issues.append("result_exacta_payout_not_object")
+            invalid_exacta_payout_items += 1
+            continue
+        combination = item.get("combination")
+        amount = _as_int(item.get("amount"))
+        try:
+            if not isinstance(combination, str):
+                raise ValueError
+            parse_exacta_combination(combination)
+        except ValueError:
+            issues.append(f"result_invalid_exacta:{combination!r}")
+            invalid_exacta_payout_items += 1
+            continue
+        if amount is None or amount <= 0:
+            issues.append(f"result_invalid_exacta_payout:{combination}")
+            invalid_exacta_payout_items += 1
+            continue
+        if combination in exacta_payouts:
+            issues.append(f"result_duplicate_exacta:{combination}")
+            invalid_exacta_payout_items += 1
+            continue
+        exacta_payouts[combination] = amount
 
     places = [_as_int(racer.get("place_number")) for racer in racers.values()]
     standard_places = (
@@ -352,12 +440,71 @@ def _normalize_outcome(
         status = "inconsistent"
     else:
         status = "exception_settled"
+
+    derived_exacta_entries = []
+    for target_place in (1, 2):
+        matching_entries = [
+            entry
+            for entry, racer in racers.items()
+            if _as_int(racer.get("place_number")) == target_place
+        ]
+        if len(matching_entries) != 1:
+            derived_exacta_entries = []
+            break
+        derived_exacta_entries.append(matching_entries[0])
+    derived_exacta = (
+        exacta_combination_key(derived_exacta_entries)
+        if derived_exacta_entries
+        else None
+    )
+    exacta_payout_matches_places = (
+        derived_exacta is not None
+        and tuple(exacta_payouts) == (derived_exacta,)
+    )
+    exacta_payout_data_valid = (
+        exacta_payout_array_valid
+        and invalid_exacta_payout_items == 0
+        and len(exacta_payouts) == len(exacta_payout_items)
+    )
+    result_has_six_entries = tuple(sorted(racers)) == (1, 2, 3, 4, 5, 6)
+    has_known_exception = any(
+        racer.get("place_number_source") in OBSERVED_EXCEPTION_CODES
+        for racer in racers.values()
+    )
+    exacta_standard = (
+        tuple(sorted(program_racers)) == (1, 2, 3, 4, 5, 6)
+        and result_has_six_entries
+        and not has_known_exception
+        and derived_exacta is not None
+        and len(exacta_payouts) == 1
+        and exacta_payout_matches_places
+        and exacta_payout_data_valid
+    )
+    if derived_exacta is None:
+        issues.append("result_exacta_top_two_not_unique")
+    if len(exacta_payouts) != 1:
+        issues.append(f"result_exacta_payout_count:{len(exacta_payouts)}")
+    if len(exacta_payouts) == 1 and not exacta_payout_matches_places:
+        issues.append("result_exacta_payout_order_mismatch")
+    if exacta_standard:
+        exacta_status = "standard"
+    elif not exacta_payout_data_valid:
+        exacta_status = "inconsistent"
+    elif len(exacta_payouts) > 1:
+        exacta_status = "multiple_exacta_payouts"
+    elif not exacta_payout_matches_places:
+        exacta_status = "inconsistent"
+    else:
+        exacta_status = "exception_settled"
     return (
         RaceOutcome(
             status=status,
             winning_trifectas=tuple(sorted(payouts)),
             trifecta_payouts=payouts,
             racers=racers,
+            exacta_status=exacta_status,
+            winning_exactas=tuple(sorted(exacta_payouts)),
+            exacta_payouts=exacta_payouts,
         ),
         issues,
     )

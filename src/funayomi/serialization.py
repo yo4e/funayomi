@@ -67,17 +67,24 @@ def race_to_dict(race: NormalizedRace) -> Dict[str, Any]:
         ),
         "odds": {
             "trifecta": dict(race.odds.trifecta),
+            "exacta": dict(race.odds.exacta),
             "observed_at": race.odds.observed_at,
         },
         "outcome": {
             "status": race.outcome.status,
             "winning_trifectas": list(race.outcome.winning_trifectas),
             "trifecta_payouts": dict(race.outcome.trifecta_payouts),
+            "exacta_status": race.outcome.exacta_status,
+            "winning_exactas": list(race.outcome.winning_exactas),
+            "exacta_payouts": dict(race.outcome.exacta_payouts),
             "racers": _string_keys(race.outcome.racers),
         },
         "eligibility": {
             "training": race.training_eligible,
             "evaluation": race.evaluation_eligible,
+            "exacta_training": race.exacta_training_eligible,
+            "exacta_evaluation": race.exacta_evaluation_eligible,
+            "exacta_settlement": race.exacta_settlement_eligible,
         },
         "issues": list(race.issues),
         "source_sha256": race.source_sha256,
@@ -118,6 +125,7 @@ def race_from_dict(value: Mapping[str, Any]) -> NormalizedRace:
             preview=preview,
             odds=OddsSnapshot(
                 trifecta=dict(_required_mapping(odds, "trifecta")),
+                exacta=dict(_required_mapping(odds, "exacta")),
                 observed_at=_optional_string(odds.get("observed_at")),
                 availability=str(
                     availability.get("odds") or "historical_snapshot_time_unknown"
@@ -133,6 +141,16 @@ def race_from_dict(value: Mapping[str, Any]) -> NormalizedRace:
                     ).items()
                 },
                 racers=_integer_keys(_required_mapping(outcome, "racers")),
+                exacta_status=str(outcome["exacta_status"]),
+                winning_exactas=tuple(
+                    str(item) for item in outcome["winning_exactas"]
+                ),
+                exacta_payouts={
+                    str(key): int(item)
+                    for key, item in _required_mapping(
+                        outcome, "exacta_payouts"
+                    ).items()
+                },
                 availability=str(availability.get("outcome") or "post_race"),
             ),
             issues=tuple(str(item) for item in value.get("issues", ())),
